@@ -5,7 +5,7 @@ import * as vscode from 'vscode'
 suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.')
 
-  test('extension.helloWorld command', async function() {
+  test('extension.helloWorld command', async function () {
     await vscode.commands.executeCommand('extension.helloWorld')
   })
 })
