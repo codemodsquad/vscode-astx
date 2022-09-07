@@ -10,11 +10,25 @@
   "categories": [
     "Other"
   ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "activationEvents": [
+    "onView:astx.astxView",
     "onCommand:extension.helloWorld"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "astx.astxView",
+          "name": "Astx"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "extension.helloWorld",
