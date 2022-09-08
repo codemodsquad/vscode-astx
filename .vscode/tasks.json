@@ -19,7 +19,7 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": "^\\[nodemon\\] starting",
-          "endsPattern": "^Successfully compiled"
+          "endsPattern": "^\\[nodemon\\] clean exit"
         }
       },
       "isBackground": true,

@@ -1,7 +1,3 @@
 {
-  "extends": [
-    "@jedwards1211/eslint-config-typescript",
-    "prettier",
-    "prettier/@typescript-eslint"
-  ]
+  "extends": ["@jedwards1211/eslint-config-typescript", "prettier"]
 }
