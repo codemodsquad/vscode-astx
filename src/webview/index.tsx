@@ -1,9 +1,17 @@
 import * as React from 'react'
 import ReactDOM from 'react-dom/client'
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react'
+import Root from './Root'
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 
 const el = document.createElement('div')
 document.body.appendChild(el)
 
 const root = ReactDOM.createRoot(el)
-root.render(<VSCodeButton>Test</VSCodeButton>)
+root.render(<Root />)
+
+if (module.hot) {
+  module.hot.accept('./Root', () => {
+    root.render(<Root />)
+  })
+}

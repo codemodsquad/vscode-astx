@@ -3,10 +3,14 @@
 import * as vscode from 'vscode'
 import { AstxViewProvider } from './AstxViewProvider'
 
+export let isProduction = false
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext): void {
   /* eslint-enable no-console */
+
+  isProduction = context.extensionMode === vscode.ExtensionMode.Production
 
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand

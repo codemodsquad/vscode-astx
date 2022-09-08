@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { isProduction } from './extension'
 
 export class AstxViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'astx.astxView'
@@ -7,17 +8,12 @@ export class AstxViewProvider implements vscode.WebviewViewProvider {
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
 
-  public resolveWebviewView(
-    webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken
-  ): void {
+  public resolveWebviewView(webviewView: vscode.WebviewView): void {
     this._view = webviewView
 
     webviewView.webview.options = {
       // Allow scripts in the webview
       enableScripts: true,
-
       localResourceRoots: [this._extensionUri],
     }
 
@@ -54,26 +50,43 @@ export class AstxViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, 'out', 'assets', 'webview.js')
     )
 
+    const webpackOrigin = '0.0.0.0:8378'
+
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce()
+
+    const csp = [
+      `default-src 'none'`,
+      `img-src ${`vscode-file://vscode-app`} ${webview.cspSource} 'self'`,
+      `font-src ${webview.cspSource} 'self'`,
+      ...(isProduction
+        ? [
+            `script-src 'nonce-${nonce}'`,
+            `style-src ${webview.cspSource} 'self'`,
+          ]
+        : [
+            `script-src 'unsafe-eval' http://${webpackOrigin}`,
+            `style-src ${webview.cspSource} 'self' 'unsafe-inline'`,
+            `connect-src http://${webpackOrigin} ws://${webpackOrigin}`,
+          ]),
+    ]
 
     return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
-
-				<!--
-					Use a content security policy to only allow loading images from https or from our extension directory,
-					and only allow scripts that have a specific nonce.
-				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'unsafe-eval' 'nonce-${nonce}';">
+				<meta http-equiv="Content-Security-Policy" content="${csp.join(';')}">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				
 				<title>Cat Colors</title>
 			</head>
 			<body>
-				<script nonce="${nonce}" src="${scriptUri}" type="module"></script>
+        ${
+          isProduction
+            ? `<script nonce="${nonce}" src="${scriptUri}" type="module"></script>`
+            : `<script src="http://${webpackOrigin}/webview.js"></script>`
+        }
 			</body>
 			</html>`
   }
