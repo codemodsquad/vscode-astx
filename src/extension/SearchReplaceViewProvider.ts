@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
-import { AstxRunner, AstxRunnerEvents } from './AstxRunner'
+import { AstxRunner, AstxRunnerEvents, ProgressEvent } from './AstxRunner'
 import { isProduction } from './extension'
+import { MessageFromWebview } from '../shared/SearchReplaceViewTypes'
 export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'astx.SearchReplaceView'
 
@@ -23,37 +24,63 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    webviewView.webview.onDidReceiveMessage((message: any) => {
+    webviewView.webview.onDidReceiveMessage((_message: any) => {
+      const message: MessageFromWebview = _message
       switch (message.type) {
-        case 'search': {
-          const { find, replace, include, exclude } = message
+        case 'values': {
+          const { find, replace, include, exclude } = message.values
           this.runner.params = { find, replace, include, exclude }
           break
         }
       }
     })
 
-    const events: (keyof AstxRunnerEvents)[] = [
-      'progress',
-      'start',
-      'stop',
-      'done',
-    ]
-    const listeners = Object.fromEntries(
-      events.map((type) => [
-        type,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (event: any) => webviewView.webview.postMessage({ type, ...event }),
-      ])
-    )
+    // const events: (keyof AstxRunnerEvents)[] = [
+    //   'progress',
+    //   'start',
+    //   'stop',
+    //   'done',
+    // ]
+    const listeners = {
+      progress: ({ completed, total }: ProgressEvent) =>
+        webviewView.webview.postMessage({
+          type: 'status',
+          status: { completed, total },
+        }),
+      start: () => {
+        webviewView.webview.postMessage({
+          type: 'status',
+          status: { running: true },
+        })
+      },
+      stop: () => {
+        webviewView.webview.postMessage({
+          type: 'status',
+          status: { running: false },
+        })
+      },
+      done: () => {
+        webviewView.webview.postMessage({
+          type: 'status',
+          status: { running: false },
+        })
+      },
+    }
+    // const listeners = Object.fromEntries(
+    // events.map((type) => [
+    //   type,
+    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //   (event: any) => webviewView.webview.postMessage({ type, ...event }),
+    // ])
+    // )
 
-    for (const event of events) {
-      this.runner.on(event, listeners[event])
+    for (const [event, listener] of Object.entries(listeners)) {
+      this.runner.on(event as keyof AstxRunnerEvents, listener)
     }
 
     webviewView.onDidDispose(() => {
-      for (const event of events) {
-        this.runner.removeListener(event, listeners[event])
+      for (const [event, listener] of Object.entries(listeners)) {
+        this.runner.removeListener(event as keyof AstxRunnerEvents, listener)
       }
     })
   }

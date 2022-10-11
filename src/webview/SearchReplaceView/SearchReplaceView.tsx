@@ -6,80 +6,40 @@ import {
 } from '@vscode/webview-ui-toolkit/react'
 import { css } from '@emotion/css'
 import useEvent from '../useEvent'
-import useEventListener from '../useEventListener'
-import { WebviewApi } from 'vscode-webview'
-
-const params = { find: '', replace: '', include: '', exclude: '' }
-
-type Progress = { completed: number; total: number }
+import {
+  SearchReplaceViewStatus,
+  SearchReplaceViewValues,
+} from '../../shared/SearchReplaceViewTypes'
 
 export default function SearchReplaceView({
-  vscode,
+  status: { running, completed, total, error },
+  values,
+  onValuesChange,
 }: {
-  vscode: WebviewApi<any>
+  status: SearchReplaceViewStatus
+  values: SearchReplaceViewValues
+  onValuesChange: (values: Partial<SearchReplaceViewValues>) => unknown
 }): React.ReactElement {
-  const [running, setRunning] = React.useState(false)
-  const [error, setError] = React.useState<Error | null>(null)
-  const [progress, setProgress] = React.useState<Progress>({
-    completed: 0,
-    total: 0,
-  })
-
-  useEventListener(window, 'message', (message: any) => {
-    const { type, ...rest } = message.data || {}
-    switch (type) {
-      case 'progress':
-        setProgress((p) => ({ ...p, ...rest }))
-        break
-      case 'start':
-        setRunning(true)
-        setError(null)
-        break
-      case 'stop':
-      case 'done':
-        setRunning(false)
-        break
-      case 'error':
-        setError(rest)
-        break
-    }
-  })
-
-  const postSearch = useEvent((options?: { force?: boolean }) => {
-    setTimeout(() => {
-      if (params.find || options?.force) {
-        vscode.postMessage({
-          ...params,
-          type: 'search',
-        })
-      }
-    }, 1)
-  })
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFindChange = React.useCallback((e: any) => {
-    params.find = e.target.value
-    postSearch()
+    onValuesChange({ find: e.target.value })
   }, [])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleReplaceChange = React.useCallback((e: any) => {
-    params.replace = e.target.value
-    postSearch()
+    onValuesChange({ replace: e.target.value })
   }, [])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleIncludeChange = React.useCallback((e: any) => {
-    params.include = e.target.value
-    postSearch()
+    onValuesChange({ include: e.target.value })
   }, [])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleExcludeChange = React.useCallback((e: any) => {
-    params.exclude = e.target.value
-    postSearch()
+    onValuesChange({ exclude: e.target.value })
   }, [])
 
   const handleKeyDown = useEvent((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey || e.metaKey) {
-      postSearch({ force: true })
+      onValuesChange({})
     }
   })
   const [showDetails, setShowDetails] = React.useState(true)
@@ -102,6 +62,7 @@ export default function SearchReplaceView({
         `}
         placeholder="Search"
         name="search"
+        value={values.find}
         onInput={handleFindChange}
       />
       <VSCodeTextArea
@@ -110,6 +71,7 @@ export default function SearchReplaceView({
         `}
         placeholder="Replace"
         name="replace"
+        value={values.replace}
         onInput={handleReplaceChange}
       />
       <div
@@ -137,6 +99,7 @@ export default function SearchReplaceView({
               margin-top: 4px;
             `}
             name="filesToInclude"
+            value={values.include}
             onInput={handleIncludeChange}
           >
             files to include
@@ -146,6 +109,7 @@ export default function SearchReplaceView({
               margin-top: 4px;
             `}
             name="filesToExclude"
+            value={values.exclude}
             onInput={handleExcludeChange}
           >
             files to exclude
@@ -154,8 +118,8 @@ export default function SearchReplaceView({
       )}
       {running && (
         <div>
-          Progress: {progress.completed}/{progress.total} (
-          {Math.floor((progress.completed * 100) / (progress.total || 1))}%)
+          Progress: {completed}/{total} (
+          {Math.floor((completed * 100) / (total || 1))}%)
         </div>
       )}
     </div>

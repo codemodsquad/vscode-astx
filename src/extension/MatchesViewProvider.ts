@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { FileNodeProps } from './MatchesView/FileNode'
 import { TreeNode } from './TreeNode'
-import { AddMatchesEvent, AstxRunner } from './AstxRunner'
+import { TransformResultEvent, AstxRunner } from './AstxRunner'
 import WorkspaceFolderNode from './MatchesView/WorkspaceFolderNode'
 import { throttle } from 'lodash'
 
@@ -19,7 +19,7 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
       this.errors.clear()
       this.fireChange()
     })
-    runner.on('addMatches', (event: AddMatchesEvent) => {
+    runner.on('result', (event: TransformResultEvent) => {
       const workspaceFolder =
         vscode.workspace.getWorkspaceFolder(event.file)?.name || '<other>'
       if (event.matches?.length) {

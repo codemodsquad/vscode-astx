@@ -17,7 +17,7 @@
   "activationEvents": [
     "onView:astx.SearchReplaceView"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/extension/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -51,7 +51,7 @@
     "check:types": "tsc -p src/extension/tsconfig.json --noEmit && tsc -p src/webview/tsconfig.json --noEmit",
     "build": "npm run clean && tsc -p src/extension/tsconfig.json && webpack",
     "test:unit": "mocha --watch-files 'src/**/*' -r ts-node/register src/test/unit/configure.js 'src/test/unit/**/*.ts'",
-    "test": "rimraf .nyc_output; npm run test:unit && node ./out/test/runTest.js && nyc report && nyc report --reporter=lcov",
+    "test": "rimraf .nyc_output; npm run test:unit && node ./out/extension/test/runTest.js && nyc report && nyc report --reporter=lcov",
     "codecov": "nyc report --reporter=text-lcov > coverage.lcov; codecov",
     "open:coverage": "open coverage/lcov-report/index.html",
     "semantic-release": "semantic-release",

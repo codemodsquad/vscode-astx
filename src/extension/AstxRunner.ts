@@ -5,9 +5,10 @@ import * as vscode from 'vscode'
 import { debounce, isEqual } from 'lodash'
 import { convertGlobPattern, joinPatterns } from './convertGlobPattern'
 
-export type AddMatchesEvent = {
+export type TransformResultEvent = {
   file: vscode.Uri
   source: string
+  transformed?: string
   matches: readonly IpcMatch[]
   error?: Error
 }
@@ -18,7 +19,7 @@ export type ProgressEvent = {
 }
 
 export interface AstxRunnerEvents {
-  addMatches: (options: AddMatchesEvent) => void
+  result: (options: TransformResultEvent) => void
   stop: () => void
   start: () => void
   progress: (options: ProgressEvent) => void
@@ -101,16 +102,17 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
             continue
           }
           const {
-            result: { file, source = '', matches, error },
+            result: { file, source = '', transformed, matches, error },
           } = next
           if (!matches?.length && !error) continue
-          const event: AddMatchesEvent = {
+          const event: TransformResultEvent = {
             file: vscode.Uri.file(file),
             source,
+            transformed,
             matches: matches || [],
             error,
           }
-          this.emit('addMatches', event)
+          this.emit('result', event)
         }
         if (signal?.aborted) return
         this.emit('done')

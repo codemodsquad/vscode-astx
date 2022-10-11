@@ -9,6 +9,7 @@ import once from 'lodash/once'
 export type FileNodeProps = {
   file: Uri
   source: string
+  transformed?: string
   matches: readonly IpcMatch[]
   error?: Error
 }
