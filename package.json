@@ -15,26 +15,32 @@
     "workspace"
   ],
   "activationEvents": [
-    "onView:astx.astxView",
-    "onCommand:extension.helloWorld"
+    "onView:astx.SearchReplaceView"
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "views": {
-      "explorer": [
+    "viewsContainers": {
+      "activitybar": [
         {
-          "type": "webview",
-          "id": "astx.astxView",
-          "name": "Astx"
+          "id": "astx-astx",
+          "title": "Astx",
+          "icon": "media/astx.svg"
         }
       ]
     },
-    "commands": [
-      {
-        "command": "extension.helloWorld",
-        "title": "Hello World"
-      }
-    ]
+    "views": {
+      "astx-astx": [
+        {
+          "type": "webview",
+          "id": "astx.SearchReplaceView",
+          "name": "Search"
+        },
+        {
+          "id": "astx.MatchesView",
+          "name": "Matches"
+        }
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint $npm_package_config_lint",
@@ -44,7 +50,8 @@
     "clean": "rimraf out",
     "check:types": "tsc -p src/extension/tsconfig.json --noEmit && tsc -p src/webview/tsconfig.json --noEmit",
     "build": "npm run clean && tsc -p src/extension/tsconfig.json && webpack",
-    "test": "rimraf .nyc_output; node ./out/test/runTest.js && nyc report && nyc report --reporter=lcov",
+    "test:unit": "mocha --watch-files 'src/**/*' -r ts-node/register src/test/unit/configure.js 'src/test/unit/**/*.ts'",
+    "test": "rimraf .nyc_output; npm run test:unit && node ./out/test/runTest.js && nyc report && nyc report --reporter=lcov",
     "codecov": "nyc report --reporter=text-lcov > coverage.lcov; codecov",
     "open:coverage": "open coverage/lcov-report/index.html",
     "semantic-release": "semantic-release",
@@ -129,13 +136,17 @@
   },
   "homepage": "https://github.com/codemodsquad/vscode-astx#readme",
   "devDependencies": {
+    "@babel/node": "^7.19.1",
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@jedwards1211/commitlint-config": "^1.0.2",
     "@jedwards1211/eslint-config": "^2.0.2",
     "@jedwards1211/eslint-config-typescript": "^2.0.2",
     "@types/chai": "^4.2.14",
-    "@types/glob": "^7.1.1",
+    "@types/fs-extra": "^9.0.13",
+    "@types/glob": "^7.2.0",
+    "@types/lodash": "^4.14.185",
+    "@types/minimatch": "^5.1.2",
     "@types/mocha": "^8.2.0",
     "@types/node": "^16.9.6",
     "@types/react": "^18.0.18",
@@ -154,7 +165,7 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "fs-extra": "^8.1.0",
-    "glob": "^7.1.6",
+    "glob": "^7.2.3",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^4.3.8",
     "lint-staged": "^10.5.3",
@@ -166,6 +177,7 @@
     "semantic-release": "^19.0.5",
     "semantic-release-vsce": "^5.1.1",
     "ts-loader": "^9.3.1",
+    "ts-node": "^10.9.1",
     "typescript": "4.7.4",
     "vscode-test": "^1.2.3",
     "webpack": "^5.74.0",
@@ -173,9 +185,19 @@
     "webpack-dev-server": "^4.11.0"
   },
   "dependencies": {
+    "@emotion/css": "^11.10.0",
+    "@emotion/styled": "^11.10.4",
+    "@repeaterjs/repeater": "^3.0.4",
+    "@vscode/codicons": "^0.0.32",
     "@vscode/webview-ui-toolkit": "^1.0.1",
-    "astx": "^2.0.0-beta",
+    "astx": "^2.0.0-beta.25",
+    "babel-parse-wild-code": "^1.2.0",
+    "gitignore-fs": "^2.1.0",
+    "lodash": "^4.17.21",
+    "minimatch": "^5.1.0",
+    "p-event": "^4.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tiny-typed-emitter": "^2.1.0"
   }
 }

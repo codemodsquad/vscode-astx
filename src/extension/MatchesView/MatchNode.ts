@@ -1,0 +1,61 @@
+import { IpcMatch } from 'astx/node'
+import { TreeItem } from 'vscode'
+import { TreeNode } from '../TreeNode'
+import FileNode from './FileNode'
+import * as vscode from 'vscode'
+
+type MatchNodeProps = {
+  match: IpcMatch
+}
+
+function indexOfMatch(s: string, rx: RegExp, fromIndex = 0): number {
+  rx = new RegExp(rx)
+  rx.lastIndex = fromIndex
+  return rx.exec(s)?.index ?? -1
+}
+
+export default class MatchNode extends TreeNode<MatchNodeProps> {
+  constructor(
+    public readonly props: MatchNodeProps,
+    public readonly parent: FileNode
+  ) {
+    super(props, parent)
+  }
+  getTreeItem(): TreeItem {
+    const { source } = this.parent.props
+    const { start, end, startLine, startColumn, endLine, endColumn } =
+      this.props.match.node.location
+    if (start == null || end == null || startColumn == null) {
+      throw new Error(`missing complete location information`)
+    }
+    const from = indexOfMatch(source, /\S/g, start - startColumn)
+    const to = indexOfMatch(source, /\r\n?|\n/gm, from)
+    const item = new TreeItem({
+      label: this.parent.props.source.substring(from, to),
+      highlights: [[start - from, Math.min(end - from, to - from)]],
+    })
+    item.command = {
+      title: 'show match',
+      command: 'vscode.open',
+      arguments: [
+        this.parent.props.file,
+        ...(startLine != null &&
+        startColumn != null &&
+        endLine != null &&
+        endColumn != null
+          ? [
+              {
+                selection: new vscode.Range(
+                  startLine - 1,
+                  startColumn,
+                  endLine - 1,
+                  endColumn
+                ),
+              },
+            ]
+          : []),
+      ],
+    }
+    return item
+  }
+}

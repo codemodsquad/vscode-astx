@@ -4,8 +4,9 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "type": "shell",
       "label": "extension",
-      "command": "tsc",
+      "command": "./node_modules/.bin/tsc",
       "args": ["-p", "src/extension/tsconfig.json", "--watch"],
       "isBackground": true,
       "problemMatcher": {
@@ -33,8 +34,9 @@
       }
     },
     {
+      "type": "shell",
       "label": "webview",
-      "command": "webpack",
+      "command": "./node_modules/.bin/webpack",
       "args": ["serve"],
       "isBackground": true,
       "problemMatcher": {

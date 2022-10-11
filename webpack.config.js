@@ -7,9 +7,11 @@ const port = 8378
 
 module.exports = {
   mode: isProduction ? 'production' : 'development',
-  entry: './src/webview/index.tsx',
+  entry: {
+    SearchReplaceView: './src/webview/SearchReplaceView/index.tsx',
+  },
   output: {
-    filename: 'webview.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'out', 'assets'),
     ...(isProduction ? {} : { publicPath: `http://0.0.0.0:${port}/` }),
   },

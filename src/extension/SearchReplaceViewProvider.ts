@@ -1,12 +1,15 @@
 import * as vscode from 'vscode'
+import { AstxRunner, AstxRunnerEvents } from './AstxRunner'
 import { isProduction } from './extension'
-
-export class AstxViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'astx.astxView'
+export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = 'astx.SearchReplaceView'
 
   private _view?: vscode.WebviewView
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(
+    private readonly _extensionUri: vscode.Uri,
+    private readonly runner: AstxRunner
+  ) {}
 
   public resolveWebviewView(webviewView: vscode.WebviewView): void {
     this._view = webviewView
@@ -19,35 +22,51 @@ export class AstxViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
 
-    webviewView.webview.onDidReceiveMessage((data) => {
-      switch (data.type) {
-        case 'colorSelected': {
-          vscode.window.activeTextEditor?.insertSnippet(
-            new vscode.SnippetString(`#${data.value}`)
-          )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    webviewView.webview.onDidReceiveMessage((message: any) => {
+      switch (message.type) {
+        case 'search': {
+          const { find, replace, include, exclude } = message
+          this.runner.params = { find, replace, include, exclude }
           break
         }
       }
     })
-  }
 
-  public addColor(): void {
-    if (this._view) {
-      this._view.show?.(true) // `show` is not implemented in 1.49 but is for 1.50 insiders
-      this._view.webview.postMessage({ type: 'addColor' })
-    }
-  }
+    const events: (keyof AstxRunnerEvents)[] = [
+      'progress',
+      'start',
+      'stop',
+      'done',
+    ]
+    const listeners = Object.fromEntries(
+      events.map((type) => [
+        type,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (event: any) => webviewView.webview.postMessage({ type, ...event }),
+      ])
+    )
 
-  public clearColors(): void {
-    if (this._view) {
-      this._view.webview.postMessage({ type: 'clearColors' })
+    for (const event of events) {
+      this.runner.on(event, listeners[event])
     }
+
+    webviewView.onDidDispose(() => {
+      for (const event of events) {
+        this.runner.removeListener(event, listeners[event])
+      }
+    })
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'out', 'assets', 'webview.js')
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        'out',
+        'assets',
+        'SearchReplaceView.js'
+      )
     )
 
     const webpackOrigin = '0.0.0.0:8378'
@@ -71,6 +90,16 @@ export class AstxViewProvider implements vscode.WebviewViewProvider {
           ]),
     ]
 
+    const codiconsUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        'node_modules',
+        '@vscode/codicons',
+        'dist',
+        'codicon.css'
+      )
+    )
+
     return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
@@ -78,14 +107,15 @@ export class AstxViewProvider implements vscode.WebviewViewProvider {
 				<meta http-equiv="Content-Security-Policy" content="${csp.join(';')}">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="${codiconsUri}" rel="stylesheet" />
 				
 				<title>Cat Colors</title>
 			</head>
 			<body>
         ${
           isProduction
-            ? `<script nonce="${nonce}" src="${scriptUri}" type="module"></script>`
-            : `<script src="http://${webpackOrigin}/webview.js"></script>`
+            ? `<script nonce="${nonce}" src="${scriptUri}"></script>`
+            : `<script src="http://${webpackOrigin}/SearchReplaceView.js"></script>`
         }
 			</body>
 			</html>`
