@@ -1,7 +1,7 @@
 {
   "name": "vscode-astx",
   "version": "0.0.0-development",
-  "displayName": "Dude, Where's My Module?",
+  "displayName": "ASTX",
   "description": "structural search and replace for JavaScript and TypeScript",
   "publisher": "jedwards1211",
   "engines": {

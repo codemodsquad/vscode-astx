@@ -6,4 +6,4 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/jedwards1211.vscode-astx)](https://marketplace.visualstudio.com/items?itemName=jedwards1211.vscode-astx)
 
-structural search and replace for JavaScript and TypeScript
+[WIP] VSCode extension for [`astx`](https://github.com/codemodsquad/astx) structural search and replace for JavaScript and TypeScript
