@@ -1,6 +1,6 @@
 {
   "name": "vscode-astx",
-  "version": "0.0.0-development",
+  "version": "0.0.1",
   "displayName": "ASTX",
   "description": "structural search and replace for JavaScript and TypeScript",
   "publisher": "jedwards1211",
@@ -60,20 +60,23 @@
     "vscode:prepublish": "npm run clean && npm run prettier:check && npm run lint && npm run test:unit && npm run build"
   },
   "release": {
-    "verifyConditions": [
-      "semantic-release-vsce",
-      "@semantic-release/github"
-    ],
-    "prepare": {
-      "path": "semantic-release-vsce",
-      "packageVsix": "vscode-astx.vsix"
-    },
-    "publish": [
-      "semantic-release-vsce",
-      {
-        "path": "@semantic-release/github",
-        "assets": "vscode-astx.vsix"
-      }
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "vsce package 0.0.1 --no-git-tag-version --out vscode-astx-${nextRelease.version}.vsix"
+        }
+      ],
+      [
+        "@semantic-release/github",
+        {
+          "assets": [
+            "*.vsix"
+          ]
+        }
+      ]
     ],
     "branches": [
       "master",
@@ -149,6 +152,10 @@
     "@jedwards1211/commitlint-config": "^1.0.2",
     "@jedwards1211/eslint-config": "^2.0.2",
     "@jedwards1211/eslint-config-typescript": "^2.0.2",
+    "@semantic-release/commit-analyzer": "^9.0.2",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/github": "^8.0.6",
+    "@semantic-release/release-notes-generator": "^10.0.3",
     "@types/chai": "^4.2.14",
     "@types/fs-extra": "^9.0.13",
     "@types/glob": "^7.2.0",

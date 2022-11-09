@@ -7,20 +7,17 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install pnpm
-          command: sudo npm install --global pnpm
-      - run:
           name: Install Dependencies
-          command: pnpm install --frozen-lockfile
+          command: npm install --frozen-lockfile
       - run:
           name: build
-          command: pnpm vscode:prepublish
+          command: npm run vscode:prepublish
       - run:
           name: upload test coverage
-          command: pnpm codecov
+          command: npm run codecov
       - run:
           name: release
-          command: pnpm semantic-release
+          command: npm run semantic-release
 workflows:
   version: 2
   build:
