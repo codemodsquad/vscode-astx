@@ -2,8 +2,10 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
 import { AstxRunner } from './AstxRunner'
+import { ASTX_RESULT_SCHEME } from './constants'
 import { MatchesViewProvider } from './MatchesViewProvider'
 import { SearchReplaceViewProvider } from './SearchReplaceViewProvider'
+import TransformResultProvider from './TransformResultProvider'
 
 export let isProduction = false
 
@@ -18,11 +20,17 @@ export function activate(context: vscode.ExtensionContext): void {
 
   runner = new AstxRunner()
 
-  const provider = new SearchReplaceViewProvider(context.extensionUri, runner)
+  context.subscriptions.push(
+    vscode.workspace.registerTextDocumentContentProvider(
+      ASTX_RESULT_SCHEME,
+      new TransformResultProvider(runner)
+    )
+  )
+
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       SearchReplaceViewProvider.viewType,
-      provider,
+      new SearchReplaceViewProvider(context.extensionUri, runner),
       {
         webviewOptions: {
           retainContextWhenHidden: true,

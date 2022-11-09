@@ -3,6 +3,8 @@ import { TreeItem } from 'vscode'
 import { TreeNode } from '../TreeNode'
 import FileNode from './FileNode'
 import * as vscode from 'vscode'
+import path from 'path'
+import { ASTX_RESULT_SCHEME } from '../constants'
 
 type MatchNodeProps = {
   match: IpcMatch
@@ -22,7 +24,7 @@ export default class MatchNode extends TreeNode<MatchNodeProps> {
     super(props, parent)
   }
   getTreeItem(): TreeItem {
-    const { source } = this.parent.props
+    const { source, transformed } = this.parent.props
     const { start, end, startLine, startColumn, endLine, endColumn } =
       this.props.match.node.location
     if (start == null || end == null || startColumn == null) {
@@ -36,9 +38,17 @@ export default class MatchNode extends TreeNode<MatchNodeProps> {
     })
     item.command = {
       title: 'show match',
-      command: 'vscode.open',
+      command: transformed ? 'vscode.diff' : 'vscode.open',
       arguments: [
         this.parent.props.file,
+        ...(transformed
+          ? [
+              vscode.Uri.parse(
+                `${ASTX_RESULT_SCHEME}://${this.parent.props.file.authority}${this.parent.props.file.path}`
+              ),
+              path.basename(this.parent.props.file.fsPath),
+            ]
+          : []),
         ...(startLine != null &&
         startColumn != null &&
         endLine != null &&
