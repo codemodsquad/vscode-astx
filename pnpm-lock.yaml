@@ -58,6 +58,7 @@ specifiers:
   ts-loader: ^9.3.1
   ts-node: ^10.9.1
   typescript: 4.7.4
+  vsce: ^2.14.0
   vscode-test: ^1.2.3
   webpack: ^5.74.0
   webpack-cli: ^4.10.0
@@ -123,6 +124,7 @@ devDependencies:
   ts-loader: 9.3.1_xnp4kzegbjokq62cajex2ovgkm
   ts-node: 10.9.1_blrqoobwf2eqte46qefu7nm2oe
   typescript: 4.7.4
+  vsce: 2.14.0
   vscode-test: 1.6.1
   webpack: 5.74.0_webpack-cli@4.10.0
   webpack-cli: 4.10.0_mldmorf72vas4wjtkspcp7zl7m
@@ -5618,7 +5620,7 @@ packages:
       is-ci: 2.0.0
       leven: 3.1.0
       tmp: 0.2.1
-      vsce: 2.11.0
+      vsce: 2.14.0
     transitivePeerDependencies:
       - debug
     dev: true
@@ -6405,7 +6407,7 @@ packages:
       fs-extra: 10.1.0
       ovsx: 0.5.1
       semantic-release: 19.0.5
-      vsce: 2.11.0
+      vsce: 2.14.0
     transitivePeerDependencies:
       - debug
     dev: true
@@ -7484,8 +7486,8 @@ packages:
       replace-ext: 0.0.1
     dev: true
 
-  /vsce/2.11.0:
-    resolution: {integrity: sha512-pr9Y0va/HCer0tTifeqaUrK24JJSpRd6oLeF/PY6FtrY41e+lwxiAq6jfMXx4ShAZglYg2rFKoKROwa7E7SEqQ==}
+  /vsce/2.14.0:
+    resolution: {integrity: sha512-LH0j++sHjcFNT++SYcJ86Zyw49GvyoTRfzYJGmaCgfzTyL7MyMhZeVEnj9K9qKh/m1N3/sdWWNxP+PFS/AvWiA==}
     engines: {node: '>= 14'}
     hasBin: true
     dependencies:
