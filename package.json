@@ -201,6 +201,7 @@
   },
   "dependencies": {
     "@emotion/css": "^11.10.0",
+    "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.4",
     "@repeaterjs/repeater": "^3.0.4",
     "@vscode/codicons": "^0.0.32",
