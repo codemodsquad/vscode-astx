@@ -1,7 +1,15 @@
 import * as vscode from 'vscode'
-import { AstxRunner, AstxRunnerEvents, ProgressEvent } from './AstxRunner'
+import {
+  AstxRunner,
+  AstxRunnerEvents,
+  ProgressEvent,
+  TransformResultEvent,
+} from './AstxRunner'
 import { isProduction } from './extension'
-import { MessageFromWebview } from '../shared/SearchReplaceViewTypes'
+import {
+  MessageFromWebview,
+  SearchReplaceViewStatus,
+} from '../shared/SearchReplaceViewTypes'
 export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'astx.SearchReplaceView'
 
@@ -23,56 +31,95 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview)
 
+    const status: SearchReplaceViewStatus = {
+      running: false,
+      completed: 0,
+      total: 0,
+      numMatches: 0,
+      numFilesThatWillChange: 0,
+      numFilesWithMatches: 0,
+      numFilesWithErrors: 0,
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     webviewView.webview.onDidReceiveMessage((_message: any) => {
       const message: MessageFromWebview = _message
       switch (message.type) {
+        case 'mount': {
+          webviewView.webview.postMessage({
+            type: 'values',
+            values: this.runner.params,
+          })
+          webviewView.webview.postMessage({
+            type: 'status',
+            status,
+          })
+
+          break
+        }
         case 'values': {
           const { find, replace, include, exclude } = message.values
           this.runner.params = { find, replace, include, exclude }
           break
         }
+        case 'replace': {
+          this.runner.replace()
+          break
+        }
       }
     })
 
-    // const events: (keyof AstxRunnerEvents)[] = [
-    //   'progress',
-    //   'start',
-    //   'stop',
-    //   'done',
-    // ]
     const listeners = {
-      progress: ({ completed, total }: ProgressEvent) =>
+      progress: ({ completed, total }: ProgressEvent) => {
+        status.completed = completed
+        status.total = total
         webviewView.webview.postMessage({
           type: 'status',
-          status: { completed, total },
-        }),
+          status,
+        })
+      },
+      result: (e: TransformResultEvent) => {
+        if (e.transformed && e.transformed !== e.source) {
+          status.numFilesThatWillChange++
+        }
+        if (e.matches.length) {
+          status.numMatches += e.matches.length
+          status.numFilesWithMatches++
+        }
+        if (e.error) {
+          status.numFilesWithErrors++
+        }
+        webviewView.webview.postMessage({
+          type: 'status',
+          status,
+        })
+      },
       start: () => {
+        status.running = true
         webviewView.webview.postMessage({
           type: 'status',
-          status: { running: true },
+          status,
         })
       },
       stop: () => {
+        status.running = false
+        status.numMatches = 0
+        status.numFilesThatWillChange = 0
+        status.numFilesWithMatches = 0
+        status.numFilesWithErrors = 0
         webviewView.webview.postMessage({
           type: 'status',
-          status: { running: false },
+          status,
         })
       },
       done: () => {
+        status.running = false
         webviewView.webview.postMessage({
           type: 'status',
-          status: { running: false },
+          status,
         })
       },
     }
-    // const listeners = Object.fromEntries(
-    // events.map((type) => [
-    //   type,
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   (event: any) => webviewView.webview.postMessage({ type, ...event }),
-    // ])
-    // )
 
     for (const [event, listener] of Object.entries(listeners)) {
       this.runner.on(event as keyof AstxRunnerEvents, listener)

@@ -25,6 +25,7 @@ export interface AstxRunnerEvents {
   progress: (options: ProgressEvent) => void
   done: () => void
   error: (error: Error) => void
+  replaceDone: () => void
 }
 
 type Params = {
@@ -38,6 +39,10 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
   private _params: Params = {}
   private abortController: AbortController | undefined
   private pool: AstxWorkerPool
+  private transformResults: Map<
+    string,
+    { source: string; transformed: string }
+  > = new Map()
 
   constructor() {
     super()
@@ -57,6 +62,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
 
   stop(): void {
     this.abortController?.abort()
+    this.transformResults.clear()
     this.emit('stop')
   }
 
@@ -71,7 +77,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
 
     this.emit('start')
 
-    const { find } = this._params
+    const { find, replace } = this._params
     const workspaceFolders =
       vscode.workspace.workspaceFolders?.map((f) => f.uri.path) || []
     if (!workspaceFolders.length || !find?.trim()) {
@@ -86,7 +92,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
       ? convertGlobPattern(this._params.exclude, workspaceFolders)
       : joinPatterns(workspaceFolders)
 
-    const transform: Transform = { find }
+    const transform: Transform = { find, replace }
 
     ;(async () => {
       try {
@@ -98,12 +104,18 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           if (signal?.aborted) return
           if (next.type === 'progress') {
             const { completed, total } = next
-            this.emit('progress', { completed, total })
+            this.emit('progress', {
+              completed,
+              total,
+            })
             continue
           }
           const {
             result: { file, source = '', transformed, matches, error },
           } = next
+          if (transformed) {
+            this.transformResults.set(file, { source, transformed })
+          }
           if (!matches?.length && !error) continue
           const event: TransformResultEvent = {
             file: vscode.Uri.file(file),
@@ -131,4 +143,33 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
       }
     })()
   }
+
+  async replace(): Promise<void> {
+    const edit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit()
+    for (const [
+      file,
+      { source, transformed },
+    ] of this.transformResults.entries()) {
+      edit.replace(
+        vscode.Uri.file(file),
+        new vscode.Range(new vscode.Position(0, 0), endPosition(source)),
+        transformed
+      )
+    }
+    await vscode.workspace.applyEdit(edit)
+    this.transformResults.clear()
+    this.emit('stop')
+  }
+}
+
+function endPosition(s: string): vscode.Position {
+  let line = 0,
+    column = 0
+  const rx = /\r\n?|\n/gm
+  let match
+  while ((match = rx.exec(s))) {
+    line++
+    column = s.length - match.index + match[0].length
+  }
+  return new vscode.Position(line, column)
 }

@@ -3,6 +3,10 @@ export type SearchReplaceViewStatus = {
   completed: number
   total: number
   error?: Error
+  numMatches: number
+  numFilesThatWillChange: number
+  numFilesWithMatches: number
+  numFilesWithErrors: number
 }
 
 export type SearchReplaceViewValues = {
@@ -12,12 +16,20 @@ export type SearchReplaceViewValues = {
   exclude: string
 }
 
-export type MessageToWebview = {
-  type: 'status'
-  status: Partial<SearchReplaceViewStatus>
-}
+export type MessageToWebview =
+  | {
+      type: 'status'
+      status: Partial<SearchReplaceViewStatus>
+    }
+  | {
+      type: 'values'
+      values: Partial<SearchReplaceViewValues>
+    }
 
 export type MessageFromWebview =
+  | {
+      type: 'mount'
+    }
   | {
       type: 'values'
       values: SearchReplaceViewValues

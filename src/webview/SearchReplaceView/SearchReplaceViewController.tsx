@@ -43,10 +43,18 @@ export interface Props {
 export default function SearchReplaceViewController({
   vscode,
 }: Props): React.ReactElement {
+  React.useEffect(() => {
+    vscode.postMessage({ type: 'mount' })
+  }, [])
+
   const [status, setStatus] = React.useState<SearchReplaceViewStatus>({
     running: false,
     completed: 0,
     total: 0,
+    numMatches: 0,
+    numFilesThatWillChange: 0,
+    numFilesWithMatches: 0,
+    numFilesWithErrors: 0,
   })
 
   const [values, setValues] = React.useState<SearchReplaceViewValues>({
@@ -63,6 +71,9 @@ export default function SearchReplaceViewController({
       case 'status':
         setStatus((s) => ({ ...s, ...data.status }))
         break
+      case 'values':
+        setValues((v) => ({ ...v, ...data.values }))
+        break
     }
   })
 
@@ -77,11 +88,16 @@ export default function SearchReplaceViewController({
     []
   )
 
+  const handleReplaceAllClick = React.useCallback(() => {
+    vscode.postMessage({ type: 'replace' })
+  }, [])
+
   return (
     <SearchReplaceView
       status={status}
       values={values}
       onValuesChange={handleValuesChange}
+      onReplaceAllClick={handleReplaceAllClick}
     />
   )
 }

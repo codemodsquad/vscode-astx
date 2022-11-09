@@ -27,7 +27,7 @@ specifiers:
   '@typescript-eslint/typescript-estree': ^4.32.0
   '@vscode/codicons': ^0.0.32
   '@vscode/webview-ui-toolkit': ^1.0.1
-  astx: ^2.0.0-beta.25
+  astx: ^2.0.0-beta.35
   babel-parse-wild-code: ^1.2.0
   babel-plugin-istanbul: ^6.0.0
   chai: ^4.2.0
@@ -69,7 +69,7 @@ dependencies:
   '@repeaterjs/repeater': 3.0.4
   '@vscode/codicons': 0.0.32
   '@vscode/webview-ui-toolkit': 1.0.1_react@18.2.0
-  astx: 2.0.0-beta.25
+  astx: 2.0.0-beta.35
   babel-parse-wild-code: 1.2.0
   gitignore-fs: 2.1.0
   lodash: 4.17.21
@@ -1829,8 +1829,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /astx/2.0.0-beta.25:
-    resolution: {integrity: sha512-kQGNzobbRf5No4ffoVIFxwjkKWOegYL63tfdIGT4vNoCTH8XV/K36O0WepC/qBBKtIg6xqM3mvVvWLcSSPYaQA==}
+  /astx/2.0.0-beta.35:
+    resolution: {integrity: sha512-Y+qQwwbHWup33wbJb/n0IH7Vt7RMQ4RFKqTPFigt7D2EijIc+tGjaq16/hoDEwxdNuzjpN6pNS9HsYXY6e1LDQ==}
     hasBin: true
     dependencies:
       '@babel/code-frame': 7.18.6
@@ -2495,8 +2495,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
-      is-text-path: 1.0.1
       JSONStream: 1.3.5
+      is-text-path: 1.0.1
       lodash: 4.17.21
       meow: 8.1.2
       split2: 3.2.2
