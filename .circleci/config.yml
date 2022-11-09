@@ -7,11 +7,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Setup NPM Token
-          command: |
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-            echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
-      - run:
           name: Install pnpm
           command: sudo npm install --global pnpm
       - run:
@@ -26,3 +21,11 @@ jobs:
       - run:
           name: release
           command: pnpm semantic-release
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          context:
+            - github-release
+            - vsce-release
