@@ -1,18 +1,16 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
-import { AstxRunner } from './AstxRunner'
-import { ASTX_RESULT_SCHEME } from './constants'
-import { MatchesViewProvider } from './MatchesViewProvider'
-import { SearchReplaceViewProvider } from './SearchReplaceViewProvider'
-import TransformResultProvider from './TransformResultProvider'
+import { AstxRunner } from './AstxRunner.js'
+import { ASTX_RESULT_SCHEME } from './constants.js'
+import { MatchesViewProvider } from './MatchesView/MatchesViewProvider.js'
+import { SearchReplaceViewProvider } from './SearchReplaceView/SearchReplaceViewProvider.js'
+import TransformResultProvider from './TransformResultProvider.js'
 
 export let isProduction = false
-
-let runner: AstxRunner
-
-// this method is called when your extension is activated
+let runner: AstxRunner // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
+
 export function activate(context: vscode.ExtensionContext): void {
   /* eslint-enable no-console */
 
@@ -49,9 +47,8 @@ export function activate(context: vscode.ExtensionContext): void {
       new MatchesViewProvider(rootPath, runner)
     )
   )
-}
+} // this method is called when your extension is deactivated
 
-// this method is called when your extension is deactivated
 export function deactivate(): void {
   if (runner) runner.stop()
 }

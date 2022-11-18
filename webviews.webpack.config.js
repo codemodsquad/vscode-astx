@@ -8,11 +8,11 @@ const port = 8378
 module.exports = {
   mode: isProduction ? 'production' : 'development',
   entry: {
-    SearchReplaceView: './src/webview/SearchReplaceView/index.tsx',
+    SearchReplaceView: './src/SearchReplaceView/SearchReplaceViewEntry.tsx',
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'out', 'assets'),
+    path: path.resolve(__dirname, 'out'),
     ...(isProduction ? {} : { publicPath: `http://0.0.0.0:${port}/` }),
   },
   plugins: [
@@ -20,6 +20,7 @@ module.exports = {
       title: 'Hot Module Replacement',
     }),
   ],
+
   devServer: {
     hot: true,
     port,
@@ -35,7 +36,15 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+            },
+          },
+        ],
       },
     ],
   },

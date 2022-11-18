@@ -17,7 +17,8 @@
   "activationEvents": [
     "onView:astx.SearchReplaceView"
   ],
-  "main": "./out/extension/extension.js",
+  "main": "./out/extension.js",
+  "type": "module",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -48,7 +49,7 @@
     "prettier": "prettier --write $npm_package_config_prettier",
     "prettier:check": "prettier --list-different $npm_package_config_prettier",
     "clean": "rimraf out",
-    "check:types": "tsc -p src/extension/tsconfig.json --noEmit && tsc -p src/webview/tsconfig.json --noEmit",
+    "check:types": "tsc --noEmit",
     "build": "npm run clean && tsc -p src/extension/tsconfig.json && webpack",
     "test:unit": "mocha --watch-files 'src/**/*' -r ts-node/register src/test/unit/configure.js 'src/test/unit/**/*.ts'",
     "test": "rimraf .nyc_output; npm run test:unit && node ./out/extension/test/runTest.js && nyc report && nyc report --reporter=lcov",
@@ -85,6 +86,10 @@
         "prerelease": true
       }
     ]
+  },
+  "vsce": {
+    "dependencies": true,
+    "yarn": false
   },
   "config": {
     "lint": "--cache --ext .js,.ts src",
@@ -160,6 +165,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/glob": "^7.2.0",
     "@types/lodash": "^4.14.185",
+    "@types/lodash-es": "^4.17.6",
     "@types/minimatch": "^5.1.2",
     "@types/mocha": "^8.2.0",
     "@types/node": "^16.9.6",
@@ -192,7 +198,7 @@
     "semantic-release-vsce": "^5.1.1",
     "ts-loader": "^9.3.1",
     "ts-node": "^10.9.1",
-    "typescript": "4.7.4",
+    "typescript": "^4.9.3",
     "vsce": "^2.14.0",
     "vscode-test": "^1.2.3",
     "webpack": "^5.74.0",
@@ -205,10 +211,12 @@
     "@repeaterjs/repeater": "^3.0.4",
     "@vscode/codicons": "^0.0.32",
     "@vscode/webview-ui-toolkit": "^1.0.1",
-    "astx": "^2.0.0-beta.35",
+    "astx": "^2.0.0-beta.41",
     "babel-parse-wild-code": "^1.2.0",
+    "empty": "^0.10.1",
     "gitignore-fs": "^2.1.0",
     "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "minimatch": "^5.1.0",
     "p-event": "^4.0.0",
     "react": "^18.2.0",

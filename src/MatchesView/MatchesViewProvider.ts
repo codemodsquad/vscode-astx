@@ -1,9 +1,9 @@
 import * as vscode from 'vscode'
-import { FileNodeProps } from './MatchesView/FileNode'
-import { TreeNode } from './TreeNode'
-import { TransformResultEvent, AstxRunner } from './AstxRunner'
-import WorkspaceFolderNode from './MatchesView/WorkspaceFolderNode'
-import { throttle } from 'lodash'
+import { FileNodeProps } from './FileNode.js'
+import { TreeNode } from './TreeNode.js'
+import { TransformResultEvent, AstxRunner } from '../AstxRunner.js'
+import WorkspaceFolderNode from './WorkspaceFolderNode.js'
+import { throttle } from 'lodash-es'
 
 export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
   static viewType = 'astx.MatchesView'
@@ -37,6 +37,7 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
       }
       this.fireChange()
     })
+
     // eslint-disable-next-line no-console
     runner.on('error', (error: Error) => console.error(error.stack))
   }
@@ -56,7 +57,12 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
     if (element) return element.getChildren()
     const nodes: WorkspaceFolderNode[] = []
     for (const [name, files] of this.matches.entries()) {
-      nodes.push(new WorkspaceFolderNode({ name, files }))
+      nodes.push(
+        new WorkspaceFolderNode({
+          name,
+          files,
+        })
+      )
     }
     return nodes.length === 1
       ? nodes[0].getChildren()

@@ -4,12 +4,12 @@ import {
   AstxRunnerEvents,
   ProgressEvent,
   TransformResultEvent,
-} from './AstxRunner'
-import { isProduction } from './extension'
+} from '../AstxRunner.js'
+import { isProduction } from '../extension.js'
 import {
   MessageFromWebview,
   SearchReplaceViewStatus,
-} from '../shared/SearchReplaceViewTypes'
+} from './SearchReplaceViewTypes.js'
 export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'astx.SearchReplaceView'
 
@@ -40,7 +40,6 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
       numFilesWithMatches: 0,
       numFilesWithErrors: 0,
     }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     webviewView.webview.onDidReceiveMessage((_message: any) => {
       const message: MessageFromWebview = _message
@@ -59,7 +58,12 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
         }
         case 'values': {
           const { find, replace, include, exclude } = message.values
-          this.runner.params = { find, replace, include, exclude }
+          this.runner.params = {
+            find,
+            replace,
+            include,
+            exclude,
+          }
           break
         }
         case 'replace': {
@@ -135,17 +139,10 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
   private _getHtmlForWebview(webview: vscode.Webview): string {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        'out',
-        'assets',
-        'SearchReplaceView.js'
-      )
+      vscode.Uri.joinPath(this._extensionUri, 'out', 'SearchReplaceView.js')
     )
+    const webpackOrigin = '0.0.0.0:8378' // Use a nonce to only allow a specific script to be run.
 
-    const webpackOrigin = '0.0.0.0:8378'
-
-    // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce()
 
     const csp = [

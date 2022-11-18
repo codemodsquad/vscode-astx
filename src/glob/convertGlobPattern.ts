@@ -1,4 +1,4 @@
-import { splitGlobPattern } from './splitGlobPattern'
+import { splitGlobPattern } from './splitGlobPattern.js'
 import path from 'path'
 
 export function joinPatterns(patterns: readonly string[]): string {

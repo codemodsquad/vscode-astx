@@ -4,9 +4,9 @@ import {
   MessageToWebview,
   SearchReplaceViewStatus,
   SearchReplaceViewValues,
-} from '../../shared/SearchReplaceViewTypes'
-import useEventListener from '../useEventListener'
-import SearchReplaceView from './SearchReplaceView'
+} from './SearchReplaceViewTypes.js'
+import useEventListener from '../react/useEventListener.js'
+import SearchReplaceView from './SearchReplaceView.js'
 
 type SearchReplaceWebviewState = unknown
 
@@ -44,7 +44,9 @@ export default function SearchReplaceViewController({
   vscode,
 }: Props): React.ReactElement {
   React.useEffect(() => {
-    vscode.postMessage({ type: 'mount' })
+    vscode.postMessage({
+      type: 'mount',
+    })
   }, [])
 
   const [status, setStatus] = React.useState<SearchReplaceViewStatus>({
@@ -64,6 +66,7 @@ export default function SearchReplaceViewController({
     exclude: '',
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   useEventListener(window, 'message', (message: any) => {
     if (!message.data) return
     const data: MessageToWebview = message.data
@@ -81,7 +84,10 @@ export default function SearchReplaceViewController({
     (updates: Partial<SearchReplaceViewValues>) => {
       setValues((prev: SearchReplaceViewValues): SearchReplaceViewValues => {
         const values: SearchReplaceViewValues = { ...prev, ...updates }
-        vscode.postMessage({ type: 'values', values })
+        vscode.postMessage({
+          type: 'values',
+          values,
+        })
         return values
       })
     },
@@ -89,7 +95,9 @@ export default function SearchReplaceViewController({
   )
 
   const handleReplaceAllClick = React.useCallback(() => {
-    vscode.postMessage({ type: 'replace' })
+    vscode.postMessage({
+      type: 'replace',
+    })
   }, [])
 
   return (

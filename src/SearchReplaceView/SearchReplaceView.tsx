@@ -5,18 +5,17 @@ import {
   VSCodeButton,
 } from '@vscode/webview-ui-toolkit/react'
 import { css } from '@emotion/css'
-import useEvent from '../useEvent'
+import useEvent from '../react/useEvent.js'
 import {
   SearchReplaceViewStatus,
   SearchReplaceViewValues,
-} from '../../shared/SearchReplaceViewTypes'
+} from './SearchReplaceViewTypes.js'
 
 export default function SearchReplaceView({
   status: {
     running,
     completed,
     total,
-    error,
     numMatches,
     numFilesWithMatches,
     numFilesWithErrors,
@@ -29,23 +28,35 @@ export default function SearchReplaceView({
   status: SearchReplaceViewStatus
   values: SearchReplaceViewValues
   onValuesChange: (values: Partial<SearchReplaceViewValues>) => unknown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onReplaceAllClick: (e: React.SyntheticEvent<any>) => unknown
 }): React.ReactElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFindChange = React.useCallback((e: any) => {
-    onValuesChange({ find: e.target.value })
+    onValuesChange({
+      find: e.target.value,
+    })
   }, [])
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleReplaceChange = React.useCallback((e: any) => {
-    onValuesChange({ replace: e.target.value })
+    onValuesChange({
+      replace: e.target.value,
+    })
   }, [])
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleIncludeChange = React.useCallback((e: any) => {
-    onValuesChange({ include: e.target.value })
+    onValuesChange({
+      include: e.target.value,
+    })
   }, [])
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleExcludeChange = React.useCallback((e: any) => {
-    onValuesChange({ exclude: e.target.value })
+    onValuesChange({
+      exclude: e.target.value,
+    })
   }, [])
 
   const handleKeyDown = useEvent((e: React.KeyboardEvent<HTMLDivElement>) => {

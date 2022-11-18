@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { AstxRunner, TransformResultEvent } from './AstxRunner'
+import { AstxRunner, TransformResultEvent } from './AstxRunner.js'
 
 export default class TransformResultProvider
   implements vscode.TextDocumentContentProvider
