@@ -6,7 +6,7 @@ import {
   SearchReplaceViewValues,
 } from './SearchReplaceViewTypes.js'
 import useEventListener from '../react/useEventListener.js'
-import SearchReplaceView from './SearchReplaceView.js'
+import SearchReplaceView from './SearchReplaceView.jsx'
 
 type SearchReplaceWebviewState = unknown
 

@@ -1,4 +1,9 @@
 import * as React from 'react'
+import {
+  VSCodeTextArea,
+  VSCodeTextField,
+  VSCodeButton,
+} from '@vscode/webview-ui-toolkit/react'
 import { css } from '@emotion/css'
 import useEvent from '../react/useEvent.js'
 import {
@@ -73,23 +78,23 @@ export default function SearchReplaceView({
         flex-direction: column;
       `}
     >
-      <textarea
+      <VSCodeTextArea
         className={css`
           margin-top: 8px;
         `}
         placeholder="Search"
         name="search"
         value={values.find}
-        onChange={handleFindChange}
+        onInput={handleFindChange}
       />
-      <textarea
+      <VSCodeTextArea
         className={css`
           margin-top: 4px;
         `}
         placeholder="Replace"
         name="replace"
         value={values.replace}
-        onChange={handleReplaceChange}
+        onInput={handleReplaceChange}
       />
       <div
         className={css`
@@ -97,15 +102,16 @@ export default function SearchReplaceView({
           justify-content: flex-end;
         `}
       >
-        <button onClick={toggleShowDetails}>
+        <VSCodeButton appearance="icon" onClick={toggleShowDetails}>
           <span className="codicon codicon-ellipsis" />
-        </button>
-        <button
+        </VSCodeButton>
+        <VSCodeButton
+          appearance="icon"
           onClick={onReplaceAllClick}
           disabled={running || !numFilesThatWillChange}
         >
           <span className="codicon codicon-replace-all" />
-        </button>
+        </VSCodeButton>
       </div>
 
       {showDetails && (
@@ -115,26 +121,26 @@ export default function SearchReplaceView({
             flex-direction: column;
           `}
         >
-          <input
+          <VSCodeTextField
             className={css`
               margin-top: 4px;
             `}
             name="filesToInclude"
             value={values.include}
-            onChange={handleIncludeChange}
+            onInput={handleIncludeChange}
           >
             files to include
-          </input>
-          <input
+          </VSCodeTextField>
+          <VSCodeTextField
             className={css`
               margin-top: 4px;
             `}
             name="filesToExclude"
             value={values.exclude}
-            onChange={handleExcludeChange}
+            onInput={handleExcludeChange}
           >
             files to exclude
-          </input>
+          </VSCodeTextField>
         </div>
       )}
       {running ? (

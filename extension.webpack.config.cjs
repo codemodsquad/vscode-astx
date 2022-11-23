@@ -11,7 +11,7 @@ module.exports = {
   entry: './src/extension.ts',
   output: {
     path: path.resolve(__dirname, 'out'),
-    filename: 'extension.js',
+    filename: 'extension.cjs',
     libraryTarget: 'commonjs2',
     devtoolModuleFilenameTemplate: '../[resource-path]',
   },
@@ -23,10 +23,17 @@ module.exports = {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     mainFields: ['browser', 'module', 'main'], // look for `browser` entry point in imported node modules
     extensions: ['.ts', '.js'],
+    extensionAlias: {
+      '.js': ['.ts', '.js'],
+      '.mjs': ['.mts', '.mjs'],
+    },
+    alias: {
+      'ts-node$': path.resolve(__dirname, 'src', 'ts-node.ts'),
+    },
   },
   plugins: [
     new webpack.IgnorePlugin({
-      resourceRegExp: /AstxWorker\.babel\.js$/,
+      resourceRegExp: /AstxWorkerEntry\.babel\.js$/,
     }),
   ],
   module: {
