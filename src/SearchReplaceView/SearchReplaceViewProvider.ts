@@ -4,12 +4,12 @@ import {
   AstxRunnerEvents,
   ProgressEvent,
   TransformResultEvent,
-} from '../AstxRunner.js'
-import { isProduction } from '../extension.js'
+} from '../AstxRunner'
+import { isProduction } from '../extension'
 import {
   MessageFromWebview,
   SearchReplaceViewStatus,
-} from './SearchReplaceViewTypes.js'
+} from './SearchReplaceViewTypes'
 export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'astx.SearchReplaceView'
 
@@ -139,7 +139,7 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
   private _getHtmlForWebview(webview: vscode.Webview): string {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'out', 'SearchReplaceView.js')
+      vscode.Uri.joinPath(this._extensionUri, 'out', 'SearchReplaceView')
     )
     const webpackOrigin = '0.0.0.0:8378' // Use a nonce to only allow a specific script to be run.
 

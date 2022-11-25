@@ -1,6 +1,6 @@
 import * as React from 'react'
 import ReactDOM from 'react-dom/client'
-import SearchReplaceViewController from './SearchReplaceViewController.js'
+import SearchReplaceViewController from './SearchReplaceViewController'
 
 const vscode = acquireVsCodeApi()
 

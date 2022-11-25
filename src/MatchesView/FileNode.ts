@@ -1,8 +1,8 @@
 import { IpcMatch } from 'astx/node'
 import { Uri, TreeItem, TreeItemCollapsibleState } from 'vscode'
 import * as vscode from 'vscode'
-import { TreeNode } from './TreeNode.js'
-import MatchNode from './MatchNode.js'
+import { TreeNode } from './TreeNode'
+import MatchNode from './MatchNode'
 import path from 'path'
 import { once } from 'lodash-es'
 

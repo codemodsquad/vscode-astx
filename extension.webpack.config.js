@@ -23,12 +23,11 @@ module.exports = {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     mainFields: ['browser', 'module', 'main'], // look for `browser` entry point in imported node modules
     extensions: ['.ts', '.js'],
+    alias: {
+      'ts-node$': path.resolve(__dirname, 'src', 'ts-node-alias.ts'),
+    },
+    conditionNames: ['import', 'require', 'node'],
   },
-  plugins: [
-    new webpack.IgnorePlugin({
-      resourceRegExp: /AstxWorker\.babel\.js$/,
-    }),
-  ],
   module: {
     rules: [
       {

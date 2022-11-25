@@ -3,7 +3,7 @@ import { IpcMatch, AstxWorkerPool } from 'astx/node'
 import { TypedEmitter } from 'tiny-typed-emitter'
 import * as vscode from 'vscode'
 import { debounce, isEqual } from 'lodash'
-import { convertGlobPattern, joinPatterns } from './glob/convertGlobPattern.js'
+import { convertGlobPattern, joinPatterns } from './glob/convertGlobPattern'
 
 export type TransformResultEvent = {
   file: vscode.Uri
@@ -93,7 +93,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
       : joinPatterns(workspaceFolders)
     const exclude = this._params.exclude
       ? convertGlobPattern(this._params.exclude, workspaceFolders)
-      : joinPatterns(workspaceFolders)
+      : undefined
     const transform: Transform = {
       find,
       replace,
@@ -105,6 +105,9 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           paths: [include],
           exclude,
           transform,
+          config: {
+            parser: 'babel',
+          },
         })) {
           if (signal?.aborted) return
           if (next.type === 'progress') {

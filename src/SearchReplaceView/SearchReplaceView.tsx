@@ -5,11 +5,11 @@ import {
   VSCodeButton,
 } from '@vscode/webview-ui-toolkit/react'
 import { css } from '@emotion/css'
-import useEvent from '../react/useEvent.js'
+import useEvent from '../react/useEvent'
 import {
   SearchReplaceViewStatus,
   SearchReplaceViewValues,
-} from './SearchReplaceViewTypes.js'
+} from './SearchReplaceViewTypes'
 
 export default function SearchReplaceView({
   status: {

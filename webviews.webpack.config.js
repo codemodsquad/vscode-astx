@@ -30,6 +30,8 @@ module.exports = {
     },
   },
   resolve: {
+    mainFields: ['browser', 'module', 'main'], // look for `browser` entry point in imported node modules
+    importsFields: ['browser', 'module', 'main'],
     extensions: ['.js', '.ts', '.tsx'],
   },
   module: {

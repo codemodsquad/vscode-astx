@@ -1,10 +1,10 @@
 import { IpcMatch } from 'astx/node'
 import { TreeItem } from 'vscode'
-import { TreeNode } from './TreeNode.js'
-import FileNode from './FileNode.js'
+import { TreeNode } from './TreeNode'
+import FileNode from './FileNode'
 import * as vscode from 'vscode'
 import path from 'path'
-import { ASTX_RESULT_SCHEME } from '../constants.js'
+import { ASTX_RESULT_SCHEME } from '../constants'
 
 type MatchNodeProps = {
   match: IpcMatch

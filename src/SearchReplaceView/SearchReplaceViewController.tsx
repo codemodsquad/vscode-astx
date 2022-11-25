@@ -4,9 +4,9 @@ import {
   MessageToWebview,
   SearchReplaceViewStatus,
   SearchReplaceViewValues,
-} from './SearchReplaceViewTypes.js'
-import useEventListener from '../react/useEventListener.js'
-import SearchReplaceView from './SearchReplaceView.js'
+} from './SearchReplaceViewTypes'
+import useEventListener from '../react/useEventListener'
+import SearchReplaceView from './SearchReplaceView'
 
 type SearchReplaceWebviewState = unknown
 

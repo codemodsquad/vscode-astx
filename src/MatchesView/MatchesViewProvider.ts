@@ -1,8 +1,8 @@
 import * as vscode from 'vscode'
-import { FileNodeProps } from './FileNode.js'
-import { TreeNode } from './TreeNode.js'
-import { TransformResultEvent, AstxRunner } from '../AstxRunner.js'
-import WorkspaceFolderNode from './WorkspaceFolderNode.js'
+import { FileNodeProps } from './FileNode'
+import { TreeNode } from './TreeNode'
+import { TransformResultEvent, AstxRunner } from '../AstxRunner'
+import WorkspaceFolderNode from './WorkspaceFolderNode'
 import { throttle } from 'lodash-es'
 
 export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
