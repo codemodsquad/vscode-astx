@@ -143,26 +143,25 @@ export default function SearchReplaceView({
           </VSCodeTextField>
         </div>
       )}
-      {running ? (
+      <div
+        className={css`
+          margin-top: 8px;
+          height: 4px;
+          position: relative;
+        `}
+      >
         <div
           className={css`
-            margin-top: 8px;
-            height: 4px;
-            position: relative;
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            visibility: ${running ? 'visible' : 'hidden'};
+            width: ${((completed * 100) / (total || 1)).toFixed(1)}%;
+            background-color: var(--vscode-progressBar-background);
           `}
-        >
-          <div
-            className={css`
-              position: absolute;
-              left: 0;
-              top: 0;
-              bottom: 0;
-              width: ${((completed * 100) / (total || 1)).toFixed(1)}%;
-              background-color: var(--vscode-progressBar-background);
-            `}
-          />
-        </div>
-      ) : null}
+        />
+      </div>
       {numMatches ? (
         <div
           className={css`
