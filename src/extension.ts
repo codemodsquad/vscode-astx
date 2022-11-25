@@ -15,6 +15,7 @@ export function activate(context: vscode.ExtensionContext): void {
   /* eslint-enable no-console */
 
   isProduction = context.extensionMode === vscode.ExtensionMode.Production
+  // isProduction = true
 
   runner = new AstxRunner()
 

@@ -139,7 +139,7 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
   private _getHtmlForWebview(webview: vscode.Webview): string {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'out', 'SearchReplaceView')
+      vscode.Uri.joinPath(this._extensionUri, 'out', 'SearchReplaceView.js')
     )
     const webpackOrigin = '0.0.0.0:8378' // Use a nonce to only allow a specific script to be run.
 
@@ -152,7 +152,7 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
       ...(isProduction
         ? [
             `script-src 'nonce-${nonce}'`,
-            `style-src ${webview.cspSource} 'self'`,
+            `style-src ${webview.cspSource} 'self' 'unsafe-inline'`,
           ]
         : [
             `script-src 'unsafe-eval' http://${webpackOrigin}`,

@@ -12,6 +12,15 @@
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "preLaunchTask": "watch"
+    },
+    {
+      "name": "Run Extension Prod",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {

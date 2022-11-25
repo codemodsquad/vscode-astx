@@ -5,9 +5,9 @@
   "tasks": [
     {
       "type": "shell",
-      "label": "extension",
-      "command": "./node_modules/.bin/webpack",
-      "args": ["--config", "extension.webpack.config.js", "--watch"],
+      "label": "watch:extension",
+      "command": "npm",
+      "args": ["run", "watch:extension"],
       "isBackground": true,
       "problemMatcher": {
         "owner": "webpack",
@@ -34,9 +34,9 @@
     },
     {
       "type": "shell",
-      "label": "webview",
-      "command": "./node_modules/.bin/webpack",
-      "args": ["serve", "--config", "webviews.webpack.config.js"],
+      "label": "watch:webviews",
+      "command": "npm",
+      "args": ["run", "watch:webviews"],
       "isBackground": true,
       "problemMatcher": {
         "owner": "webpack",
@@ -63,8 +63,56 @@
       }
     },
     {
+      "label": "watch",
+      "dependsOn": ["watch:extension", "watch:webviews"],
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "build:extension",
+      "command": "npm",
+      "args": ["run", "build:extension"],
+      "problemMatcher": {
+        "owner": "webpack",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "(ERROR|WARNING) in (.+) (\\d+:\\d+(-\\d+)?)\\n([^\\n]+)",
+          "severity": 1,
+          "file": 2,
+          "location": 3,
+          "message": 5
+        }
+      },
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "build:webviews",
+      "command": "npm",
+      "args": ["run", "build:webviews"],
+      "problemMatcher": {
+        "owner": "webpack",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^([^\\s].*)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+          "file": 1,
+          "location": 2,
+          "severity": 3,
+          "code": 4,
+          "message": 5
+        }
+      },
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
       "label": "build",
-      "dependsOn": ["extension", "webview"],
+      "dependsOn": ["build:extension", "build:webviews"],
       "group": {
         "kind": "build",
         "isDefault": true

@@ -1,5 +1,4 @@
 **
-!node_modules
 !out/**
 !README.md
 !LICENSE.md

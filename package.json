@@ -49,15 +49,18 @@
     "prettier:check": "prettier --list-different $npm_package_config_prettier",
     "clean": "rimraf out",
     "check:types": "tsc --noEmit",
-    "build": "npm run clean && tsc -p src/extension/tsconfig.json && webpack",
-    "test:unit": "mocha --watch-files 'src/**/*' -r ts-node/register src/test/unit/configure.js 'src/test/unit/**/*.ts'",
+    "build": "npm run clean && npm run build:extension && npm run build:webviews",
+    "build:extension": "webpack --config extension.webpack.config.js",
+    "watch:extension": "webpack --config extension.webpack.config.js --watch",
+    "build:webviews": "webpack --config webviews.webpack.config.js",
+    "watch:webviews": "webpack serve --config webviews.webpack.config.js",
     "test": "rimraf .nyc_output; npm run test:unit && node ./out/extension/test/runTest.js && nyc report && nyc report --reporter=lcov",
     "codecov": "nyc report --reporter=text-lcov > coverage.lcov; codecov",
     "open:coverage": "open coverage/lcov-report/index.html",
     "semantic-release": "semantic-release",
     "build:watch": "nodemon -e js,ts,json --watch src --exec \"(pnpm build)\"",
     "pretest": "BABEL_ENV=coverage npm run build",
-    "vscode:prepublish": "npm run clean && npm run prettier:check && npm run lint && npm run test:unit && npm run build"
+    "vscode:prepublish": "npm run clean && npm run prettier:check && npm run lint && npm run build"
   },
   "release": {
     "plugins": [

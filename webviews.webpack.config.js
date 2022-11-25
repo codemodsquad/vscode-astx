@@ -1,7 +1,6 @@
 /* eslint-disable */
 
 const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 const isProduction = process.env.NODE_ENV === 'production'
 const port = 8378
 
@@ -15,12 +14,7 @@ module.exports = {
     path: path.resolve(__dirname, 'out'),
     ...(isProduction ? {} : { publicPath: `http://0.0.0.0:${port}/` }),
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      title: 'Hot Module Replacement',
-    }),
-  ],
-
+  devtool: 'inline-source-map',
   devServer: {
     hot: true,
     port,
