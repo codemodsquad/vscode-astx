@@ -3,6 +3,8 @@ import {
   VSCodeTextArea,
   VSCodeTextField,
   VSCodeButton,
+  VSCodeDropdown,
+  VSCodeOption,
 } from '@vscode/webview-ui-toolkit/react'
 import { css } from '@emotion/css'
 import useEvent from '../react/useEvent'
@@ -56,6 +58,13 @@ export default function SearchReplaceView({
   const handleExcludeChange = React.useCallback((e: any) => {
     onValuesChange({
       exclude: e.target.value,
+    })
+  }, [])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleParserChange = React.useCallback((e: any) => {
+    onValuesChange({
+      parser: e.target.value,
     })
   }, [])
 
@@ -141,6 +150,17 @@ export default function SearchReplaceView({
           >
             files to exclude
           </VSCodeTextField>
+          <p>Parser</p>
+          <VSCodeDropdown
+            position="below"
+            value={values.parser}
+            onChange={handleParserChange}
+          >
+            <VSCodeOption>babel</VSCodeOption>
+            <VSCodeOption>babel/auto</VSCodeOption>
+            <VSCodeOption>recast/babel</VSCodeOption>
+            <VSCodeOption>recast/babel/auto</VSCodeOption>
+          </VSCodeDropdown>
         </div>
       )}
       <div

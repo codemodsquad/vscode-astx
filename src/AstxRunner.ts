@@ -4,6 +4,7 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 import * as vscode from 'vscode'
 import { debounce, isEqual } from 'lodash'
 import { convertGlobPattern, joinPatterns } from './glob/convertGlobPattern'
+import { AstxParser } from './SearchReplaceView/SearchReplaceViewTypes'
 
 export type TransformResultEvent = {
   file: vscode.Uri
@@ -33,10 +34,11 @@ type Params = {
   replace?: string
   include?: string
   exclude?: string
+  parser?: AstxParser
 }
 
 export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
-  private _params: Params = {}
+  private _params: Params = { parser: 'babel' }
   private abortController: AbortController | undefined
   private pool: AstxWorkerPool
   private transformResults: Map<
@@ -80,7 +82,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
 
     this.emit('start')
 
-    const { find, replace } = this._params
+    const { find, replace, parser } = this._params
     const workspaceFolders =
       vscode.workspace.workspaceFolders?.map((f) => f.uri.path) || []
     if (!workspaceFolders.length || !find?.trim()) {
@@ -106,7 +108,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           exclude,
           transform,
           config: {
-            parser: 'babel',
+            parser,
           },
         })) {
           if (signal?.aborted) return

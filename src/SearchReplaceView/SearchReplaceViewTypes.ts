@@ -9,11 +9,18 @@ export type SearchReplaceViewStatus = {
   numFilesWithErrors: number
 }
 
+export type AstxParser =
+  | 'babel'
+  | 'babel/auto'
+  | 'recast/babel'
+  | 'recast/babel/auto'
+
 export type SearchReplaceViewValues = {
   find: string
   replace: string
   include: string
   exclude: string
+  parser?: AstxParser
 }
 
 export type MessageToWebview =
@@ -34,13 +41,9 @@ export type MessageFromWebview =
       type: 'values'
       values: SearchReplaceViewValues
     }
-  | {
+  | ({
       type: 'search'
-      find: string
-      replace: string
-      include: string
-      exclude: string
-    }
+    } & SearchReplaceViewValues)
   | {
       type: 'replace'
     }

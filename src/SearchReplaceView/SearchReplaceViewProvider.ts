@@ -57,12 +57,13 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
           break
         }
         case 'values': {
-          const { find, replace, include, exclude } = message.values
+          const { find, replace, include, exclude, parser } = message.values
           this.runner.params = {
             find,
             replace,
             include,
             exclude,
+            parser,
           }
           break
         }
