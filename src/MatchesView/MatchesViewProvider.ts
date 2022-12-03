@@ -8,32 +8,31 @@ import { throttle } from 'lodash-es'
 export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
   static viewType = 'astx.MatchesView'
 
-  matches: Map<string, FileNodeProps[]> = new Map()
-  errors: Map<string, FileNodeProps[]> = new Map()
+  folders: Map<string, { files: FileNodeProps[]; errors: FileNodeProps[] }> =
+    new Map()
 
   private fireChange = throttle(() => this._onDidChangeTreeData.fire(), 250)
 
   constructor(private workspaceRoot: string, private runner: AstxRunner) {
     runner.on('stop', () => {
-      this.matches.clear()
-      this.errors.clear()
+      this.folders.clear()
       this.fireChange()
     })
     runner.on('result', (event: TransformResultEvent) => {
       const workspaceFolder =
         vscode.workspace.getWorkspaceFolder(event.file)?.name || '<other>'
+      let forFolder = this.folders.get(workspaceFolder)
+      if (!forFolder) {
+        this.folders.set(
+          workspaceFolder,
+          (forFolder = { files: [], errors: [] })
+        )
+      }
       if (event.matches?.length) {
-        let forFolder = this.matches.get(workspaceFolder)
-        if (!forFolder) {
-          this.matches.set(workspaceFolder, (forFolder = []))
-        }
-        forFolder.push(event)
-      } else if (event.error) {
-        let forFolder = this.errors.get(workspaceFolder)
-        if (!forFolder) {
-          this.errors.set(workspaceFolder, (forFolder = []))
-        }
-        forFolder.push(event)
+        forFolder.files.push(event)
+      }
+      if (event.error) {
+        forFolder.errors.push(event)
       }
       this.fireChange()
     })
@@ -56,11 +55,12 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
   getChildren(element?: TreeNode): vscode.ProviderResult<TreeNode[]> {
     if (element) return element.getChildren()
     const nodes: WorkspaceFolderNode[] = []
-    for (const [name, files] of this.matches.entries()) {
+    for (const [name, { files, errors }] of this.folders.entries()) {
       nodes.push(
         new WorkspaceFolderNode({
           name,
           files,
+          errors,
         })
       )
     }
