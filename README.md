@@ -6,4 +6,11 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/jedwards1211.vscode-astx)](https://marketplace.visualstudio.com/items?itemName=jedwards1211.vscode-astx)
 
-[WIP] VSCode extension for [`astx`](https://github.com/codemodsquad/astx) structural search and replace for JavaScript and TypeScript
+VSCode extension for [`astx`](https://github.com/codemodsquad/astx) structural search and replace for JavaScript and TypeScript
+
+![Screenshot](screenshot.png)
+
+## Installation
+
+This is currently in beta. Install it by going to [Releases](/releases), downloading `vscode-astx-1.0.0-beta.#.vsix` in
+the assets of the latest release, and installing by running `code --install-extension vscode-astx-1.0.0-beta.#.vsix`.
