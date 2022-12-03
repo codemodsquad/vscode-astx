@@ -25,8 +25,12 @@ export default class MatchNode extends TreeNode<MatchNodeProps> {
   }
   getTreeItem(): TreeItem {
     const { source, transformed } = this.parent.props
-    const { start, end, startLine, startColumn, endLine, endColumn } =
-      this.props.match.node.location
+    const { nodes } = this.props.match
+    if (!nodes.length) {
+      throw new Error(`missing matched nodes`)
+    }
+    const { start, startLine, startColumn } = nodes[0].location
+    const { end, endLine, endColumn } = nodes[nodes.length - 1].location
     if (start == null || end == null || startColumn == null) {
       throw new Error(`missing complete location information`)
     }
