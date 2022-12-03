@@ -1,5 +1,5 @@
 import { Transform } from 'astx'
-import { IpcMatch, AstxWorkerPool } from 'astx/node'
+import { IpcMatch, AstxWorkerPool, invertIpcError } from 'astx/node'
 import { TypedEmitter } from 'tiny-typed-emitter'
 import * as vscode from 'vscode'
 import { debounce, isEqual } from 'lodash'
@@ -135,7 +135,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
             source,
             transformed,
             matches: matches || [],
-            error,
+            error: invertIpcError(error),
           }
           this.emit('result', event)
         }

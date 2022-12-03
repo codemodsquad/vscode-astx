@@ -1,3 +1,4 @@
+import { CodeFrameError } from 'astx'
 import { IpcMatch } from 'astx/node'
 import { Uri, TreeItem, TreeItemCollapsibleState } from 'vscode'
 import * as vscode from 'vscode'
@@ -16,8 +17,19 @@ export type FileNodeProps = {
 }
 
 export default class FileNode extends TreeNode<FileNodeProps> {
+  get errorMessage(): string | null {
+    const { error } = this.props
+    if (!error) return null
+    if (error instanceof CodeFrameError) {
+      return error.format({
+        highlightCode: true,
+        stack: true,
+      })
+    }
+    return error.stack || error.message || String(error)
+  }
   getTreeItem(): TreeItem {
-    const { file, matches, error } = this.props
+    const { file, matches } = this.props
     const result = new TreeItem(
       path.basename(file.path),
       matches.length
@@ -26,13 +38,17 @@ export default class FileNode extends TreeNode<FileNodeProps> {
     )
     const dirname = path.dirname(vscode.workspace.asRelativePath(file))
     if (dirname !== '.') result.description = dirname
-    if (error) result.tooltip = error.stack || error.message
+    const { errorMessage } = this
+    if (errorMessage) result.tooltip = errorMessage
     return result
   }
   getChildren: () => TreeNode[] = once((): TreeNode[] => {
-    const { error, matches } = this.props
-    if (error) {
-      const message = (error.stack || error.message).split(/\r\n?|\n/gm)
+    const {
+      errorMessage,
+      props: { matches },
+    } = this
+    if (errorMessage) {
+      const message = errorMessage.split(/\r\n?|\n/gm)
       return message.map(
         (line) => new LeafTreeItemNode({ item: new TreeItem(line) })
       )
