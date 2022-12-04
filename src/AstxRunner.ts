@@ -135,7 +135,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
             source,
             transformed,
             matches: matches || [],
-            error: invertIpcError(error),
+            error: error ? invertIpcError(error) : null,
           }
           this.emit('result', event)
         }
