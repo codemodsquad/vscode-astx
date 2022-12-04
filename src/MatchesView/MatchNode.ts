@@ -41,7 +41,7 @@ export default class MatchNode extends TreeNode<MatchNodeProps> {
       highlights: [[start - from, Math.min(end - from, to - from)]],
     })
     item.command = {
-      title: 'show match',
+      title: 'go to match',
       command: transformed ? 'vscode.diff' : 'vscode.open',
       arguments: [
         this.parent.props.file,

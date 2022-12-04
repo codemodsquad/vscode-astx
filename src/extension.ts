@@ -19,11 +19,17 @@ export function activate(context: vscode.ExtensionContext): void {
 
   runner = new AstxRunner()
 
+  const transformResultProvider = new TransformResultProvider(runner)
+
   context.subscriptions.push(
     vscode.workspace.registerTextDocumentContentProvider(
       ASTX_RESULT_SCHEME,
-      new TransformResultProvider(runner)
+      transformResultProvider
     )
+  )
+
+  context.subscriptions.push(
+    vscode.window.registerFileDecorationProvider(transformResultProvider)
   )
 
   context.subscriptions.push(

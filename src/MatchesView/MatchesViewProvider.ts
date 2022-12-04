@@ -8,8 +8,7 @@ import { throttle } from 'lodash-es'
 export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
   static viewType = 'astx.MatchesView'
 
-  folders: Map<string, { files: FileNodeProps[]; errors: FileNodeProps[] }> =
-    new Map()
+  folders: Map<string, { files: FileNodeProps[] }> = new Map()
 
   private fireChange = throttle(() => this._onDidChangeTreeData.fire(), 250)
 
@@ -23,16 +22,10 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
         vscode.workspace.getWorkspaceFolder(event.file)?.name || '<other>'
       let forFolder = this.folders.get(workspaceFolder)
       if (!forFolder) {
-        this.folders.set(
-          workspaceFolder,
-          (forFolder = { files: [], errors: [] })
-        )
+        this.folders.set(workspaceFolder, (forFolder = { files: [] }))
       }
-      if (event.matches?.length) {
+      if (event.matches?.length || event.error) {
         forFolder.files.push(event)
-      }
-      if (event.error) {
-        forFolder.errors.push(event)
       }
       this.fireChange()
     })
@@ -55,12 +48,11 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
   getChildren(element?: TreeNode): vscode.ProviderResult<TreeNode[]> {
     if (element) return element.getChildren()
     const nodes: WorkspaceFolderNode[] = []
-    for (const [name, { files, errors }] of this.folders.entries()) {
+    for (const [name, { files }] of this.folders.entries()) {
       nodes.push(
         new WorkspaceFolderNode({
           name,
           files,
-          errors,
         })
       )
     }

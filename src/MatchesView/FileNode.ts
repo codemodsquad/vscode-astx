@@ -7,6 +7,7 @@ import MatchNode from './MatchNode'
 import path from 'path'
 import { once } from 'lodash-es'
 import LeafTreeItemNode from './LeafTreeItemNode'
+import { ASTX_RESULT_SCHEME } from '../constants'
 
 export type FileNodeProps = {
   file: Uri
@@ -29,18 +30,54 @@ export default class FileNode extends TreeNode<FileNodeProps> {
     return error.stack || error.message || String(error)
   }
   getTreeItem(): TreeItem {
-    const { file, matches } = this.props
-    const result = new TreeItem(
-      path.basename(file.path),
+    const { file, transformed, matches } = this.props
+    const item = new TreeItem(
+      file.with({ scheme: ASTX_RESULT_SCHEME }),
       matches.length
         ? TreeItemCollapsibleState.Expanded
-        : TreeItemCollapsibleState.Collapsed
+        : TreeItemCollapsibleState.None
     )
     const dirname = path.dirname(vscode.workspace.asRelativePath(file))
-    if (dirname !== '.') result.description = dirname
+    if (dirname !== '.') item.description = dirname
+
     const { errorMessage } = this
-    if (errorMessage) result.tooltip = errorMessage
-    return result
+    if (errorMessage) {
+      item.tooltip = errorMessage
+      item.command = {
+        title: 'view error',
+        command: 'vscode.open',
+        arguments: [file.with({ scheme: ASTX_RESULT_SCHEME })],
+      }
+    } else {
+      const { nodes } = matches[0]
+      const { start, startLine, startColumn } = nodes?.[0]?.location || {}
+      item.command = {
+        title: transformed ? 'open diff' : 'open file',
+        command: transformed ? 'vscode.diff' : 'vscode.open',
+        arguments: [
+          file,
+          ...(transformed
+            ? [
+                file.with({ scheme: ASTX_RESULT_SCHEME }),
+                path.basename(file.path),
+              ]
+            : []),
+          ...(startLine != null && startColumn != null
+            ? [
+                {
+                  selection: new vscode.Range(
+                    startLine - 1,
+                    startColumn,
+                    startLine - 1,
+                    startColumn
+                  ),
+                },
+              ]
+            : []),
+        ],
+      }
+    }
+    return item
   }
   getChildren: () => TreeNode[] = once((): TreeNode[] => {
     const {
