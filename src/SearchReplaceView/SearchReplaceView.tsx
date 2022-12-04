@@ -5,6 +5,7 @@ import {
   VSCodeButton,
   VSCodeDropdown,
   VSCodeOption,
+  VSCodeCheckbox,
 } from '@vscode/webview-ui-toolkit/react'
 import { css } from '@emotion/css'
 import useEvent from '../react/useEvent'
@@ -65,6 +66,13 @@ export default function SearchReplaceView({
   const handleParserChange = React.useCallback((e: any) => {
     onValuesChange({
       parser: e.target.value,
+    })
+  }, [])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handlePrettierChange = React.useCallback((e: any) => {
+    onValuesChange({
+      prettier: e.target.checked,
     })
   }, [])
 
@@ -161,6 +169,12 @@ export default function SearchReplaceView({
             <VSCodeOption>recast/babel</VSCodeOption>
             <VSCodeOption>recast/babel/auto</VSCodeOption>
           </VSCodeDropdown>
+          <VSCodeCheckbox
+            checked={values.prettier}
+            onChange={handlePrettierChange}
+          >
+            Use Prettier if Available
+          </VSCodeCheckbox>
         </div>
       )}
       <div

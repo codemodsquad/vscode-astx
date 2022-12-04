@@ -21,6 +21,7 @@ export type SearchReplaceViewValues = {
   include: string
   exclude: string
   parser?: AstxParser
+  prettier?: boolean
 }
 
 export type MessageToWebview =

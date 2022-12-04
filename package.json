@@ -213,7 +213,7 @@
     "@repeaterjs/repeater": "^3.0.4",
     "@vscode/codicons": "^0.0.32",
     "@vscode/webview-ui-toolkit": "^1.0.1",
-    "astx": "^2.0.0",
+    "astx": "^2.0.1",
     "babel-parse-wild-code": "^1.2.0",
     "empty": "^0.10.1",
     "gitignore-fs": "^2.1.0",

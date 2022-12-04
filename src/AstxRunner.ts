@@ -35,10 +35,11 @@ type Params = {
   include?: string
   exclude?: string
   parser?: AstxParser
+  prettier?: boolean
 }
 
 export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
-  private _params: Params = { parser: 'babel' }
+  private _params: Params = { parser: 'babel', prettier: true }
   private abortController: AbortController | undefined
   private pool: AstxWorkerPool
   private transformResults: Map<
@@ -82,7 +83,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
 
     this.emit('start')
 
-    const { find, replace, parser } = this._params
+    const { find, replace, parser, prettier } = this._params
     const workspaceFolders =
       vscode.workspace.workspaceFolders?.map((f) => f.uri.path) || []
     if (!workspaceFolders.length || !find?.trim()) {
@@ -109,6 +110,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           transform,
           config: {
             parser,
+            prettier,
           },
         })) {
           if (signal?.aborted) return
