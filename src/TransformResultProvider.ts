@@ -21,9 +21,7 @@ export default class TransformResultProvider
     })
     runner.on('result', (event: TransformResultEvent) => {
       const { file } = event
-      const uri = vscode.Uri.parse(
-        `${ASTX_RESULT_SCHEME}://${file.authority}${file.path}`
-      )
+      const uri = file.with({ scheme: ASTX_RESULT_SCHEME })
       if (event.transformed) {
         this.transformResults.set(uri.toString(), event.transformed)
       }

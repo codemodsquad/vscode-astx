@@ -47,10 +47,8 @@ export default class MatchNode extends TreeNode<MatchNodeProps> {
         this.parent.props.file,
         ...(transformed
           ? [
-              vscode.Uri.parse(
-                `${ASTX_RESULT_SCHEME}://${this.parent.props.file.authority}${this.parent.props.file.path}`
-              ),
-              path.basename(this.parent.props.file.fsPath),
+              this.parent.props.file.with({ scheme: ASTX_RESULT_SCHEME }),
+              path.basename(this.parent.props.file.path),
             ]
           : []),
         ...(startLine != null &&
