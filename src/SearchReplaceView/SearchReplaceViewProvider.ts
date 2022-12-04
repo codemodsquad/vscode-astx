@@ -142,27 +142,22 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
     const csp = [
       `default-src 'none'`,
       `img-src ${`vscode-file://vscode-app`} ${webview.cspSource} 'self'`,
-      `font-src ${webview.cspSource} 'self'`,
       ...(isProduction
         ? [
             `script-src 'nonce-${nonce}'`,
             `style-src ${webview.cspSource} 'self' 'unsafe-inline'`,
+            `font-src ${webview.cspSource} 'self'`,
           ]
         : [
             `script-src 'unsafe-eval' http://${webpackOrigin}`,
             `style-src ${webview.cspSource} 'self' 'unsafe-inline'`,
+            `font-src http://${webpackOrigin} ${webview.cspSource} 'self'`,
             `connect-src http://${webpackOrigin} ws://${webpackOrigin}`,
           ]),
     ]
 
     const codiconsUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        'node_modules',
-        '@vscode/codicons',
-        'dist',
-        'codicon.css'
-      )
+      vscode.Uri.joinPath(this._extensionUri, 'out', 'SearchReplaceView.css')
     )
 
     return `<!DOCTYPE html>

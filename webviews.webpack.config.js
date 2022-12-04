@@ -3,6 +3,7 @@
 const path = require('path')
 const isProduction = process.env.NODE_ENV === 'production'
 const port = 8378
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
   mode: isProduction ? 'production' : 'development',
@@ -28,6 +29,7 @@ module.exports = {
     importsFields: ['browser', 'module', 'main'],
     extensions: ['.js', '.ts', '.tsx'],
   },
+  plugins: [new MiniCssExtractPlugin()],
   module: {
     rules: [
       {
@@ -41,6 +43,10 @@ module.exports = {
             },
           },
         ],
+      },
+      {
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
     ],
   },
