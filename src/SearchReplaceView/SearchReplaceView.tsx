@@ -139,16 +139,27 @@ export default function SearchReplaceView({
             flex-direction: column;
           `}
         >
-          <VSCodeTextField
+          <div
             className={css`
-              margin-top: 4px;
+              display: flex;
+              align-items: flex-end;
             `}
-            name="filesToInclude"
-            value={values.include}
-            onInput={handleIncludeChange}
           >
-            files to include
-          </VSCodeTextField>
+            <VSCodeTextField
+              className={css`
+                margin-top: 4px;
+                flex: 1 1 auto;,
+              `}
+              name="filesToInclude"
+              value={values.include}
+              onInput={handleIncludeChange}
+            >
+              files to include
+            </VSCodeTextField>
+            <VSCodeButton appearance="icon">
+              <span className="codicon codicon-book" />
+            </VSCodeButton>
+          </div>
           <VSCodeTextField
             className={css`
               margin-top: 4px;
