@@ -77,6 +77,13 @@ export default function SearchReplaceView({
     })
   }, [])
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleBabelGeneratorHackChange = React.useCallback((e: any) => {
+    onValuesChange({
+      babelGeneratorHack: e.target.checked,
+    })
+  }, [])
+
   const handleKeyDown = useEvent((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey || e.metaKey) {
       onValuesChange({})
@@ -170,6 +177,14 @@ export default function SearchReplaceView({
             <VSCodeOption>recast/babel</VSCodeOption>
             <VSCodeOption>recast/babel/auto</VSCodeOption>
           </VSCodeDropdown>
+          {values.parser === 'babel' || values.parser === 'babel/auto' ? (
+            <VSCodeCheckbox
+              checked={values.babelGeneratorHack}
+              onChange={handleBabelGeneratorHackChange}
+            >
+              Preserve Formatting with @babel/generator hack
+            </VSCodeCheckbox>
+          ) : null}
           <VSCodeCheckbox
             checked={values.prettier}
             onChange={handlePrettierChange}

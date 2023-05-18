@@ -36,6 +36,7 @@ type Params = {
   exclude?: string
   parser?: AstxParser
   prettier?: boolean
+  babelGeneratorHack?: boolean
 }
 
 export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
@@ -83,7 +84,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
 
     this.emit('start')
 
-    const { find, replace, parser, prettier } = this._params
+    const { find, replace, parser, prettier, babelGeneratorHack } = this._params
     const workspaceFolders =
       vscode.workspace.workspaceFolders?.map((f) => f.uri.path) || []
     if (!workspaceFolders.length || !find?.trim()) {
@@ -110,6 +111,11 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           transform,
           config: {
             parser,
+            parserOptions:
+              (parser === 'babel' || parser === 'babel/auto') &&
+              babelGeneratorHack
+                ? { preserveFormat: 'generatorHack' }
+                : undefined,
             prettier,
           },
         })) {
