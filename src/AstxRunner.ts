@@ -46,7 +46,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
   private _params: Params = {
     parser: 'babel',
     prettier: true,
-    preferSimpleReplacement: true,
+    preferSimpleReplacement: false,
   }
   private astxNode: AstxNodeTypes
   private abortController: AbortController | undefined

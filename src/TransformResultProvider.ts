@@ -15,7 +15,7 @@ export default class TransformResultProvider
   results: Map<string, TransformResultEvent> = new Map()
 
   constructor(private extension: AstxExtension) {
-    const {runner} = extension
+    const { runner } = extension
     runner.on('stop', () => {
       const uris = [...this.results.keys()].map((raw) => vscode.Uri.parse(raw))
       for (const uri of uris) {
