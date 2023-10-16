@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
-import { AstxRunner } from './AstxRunner'
+import { AstxRunner, Params } from './AstxRunner'
 import { ASTX_RESULT_SCHEME } from './constants'
 import { MatchesViewProvider } from './MatchesView/MatchesViewProvider'
 import { SearchReplaceViewProvider } from './SearchReplaceView/SearchReplaceViewProvider'
@@ -18,12 +18,15 @@ export class AstxExtension {
   channel: vscode.OutputChannel = vscode.window.createOutputChannel('astx')
   runner: AstxRunner
   transformResultProvider: TransformResultProvider
+  searchReplaceViewProvider: SearchReplaceViewProvider
+  matchesViewProvider: MatchesViewProvider | undefined
 
   constructor(public context: vscode.ExtensionContext) {
     this.isProduction =
       context.extensionMode === vscode.ExtensionMode.Production
     this.runner = new AstxRunner(this)
     this.transformResultProvider = new TransformResultProvider(this)
+    this.searchReplaceViewProvider = new SearchReplaceViewProvider(this)
   }
 
   async importAstxNode(): Promise<AstxNodeTypes> {
@@ -78,6 +81,15 @@ export class AstxExtension {
     }
   }
 
+  getParams(): Params {
+    return this.runner.params
+  }
+
+  setParams(params: Params): void {
+    this.runner.params = params
+    this.searchReplaceViewProvider.setParams(params)
+  }
+
   activate(context: vscode.ExtensionContext): void {
     this.runner.startup().catch(this.logError)
 
@@ -96,6 +108,37 @@ export class AstxExtension {
     )
 
     context.subscriptions.push(
+      vscode.commands.registerCommand(
+        'astx.searchInDirectory',
+        (dir: vscode.Uri, arg2: vscode.Uri[]) => {
+          const dirs =
+            Array.isArray(arg2) &&
+            arg2.every((item) => item instanceof vscode.Uri)
+              ? arg2
+              : [dir]
+          const newParams = {
+            ...this.getParams(),
+            include: dirs
+              .map((dir) => {
+                const folder = vscode.workspace.getWorkspaceFolder(dir)
+                return folder
+                  ? `${
+                      (vscode.workspace.workspaceFolders?.length ?? 0) > 1
+                        ? path.basename(folder.uri.path) + '/'
+                        : './'
+                    }${path.relative(folder.uri.path, dir.path)}`
+                  : dir.fsPath
+              })
+              .join(', '),
+            exclude: '',
+          }
+          this.setParams(newParams)
+          this.searchReplaceViewProvider.show()
+        }
+      )
+    )
+
+    context.subscriptions.push(
       vscode.workspace.registerTextDocumentContentProvider(
         ASTX_RESULT_SCHEME,
         this.transformResultProvider
@@ -109,7 +152,7 @@ export class AstxExtension {
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         SearchReplaceViewProvider.viewType,
-        new SearchReplaceViewProvider(this),
+        this.searchReplaceViewProvider,
         {
           webviewOptions: {
             retainContextWhenHidden: true,
@@ -122,10 +165,11 @@ export class AstxExtension {
       vscode.workspace.workspaceFolders.length > 0
         ? vscode.workspace.workspaceFolders[0].uri.fsPath
         : ''
+    this.matchesViewProvider = new MatchesViewProvider(rootPath, this)
     context.subscriptions.push(
       vscode.window.registerTreeDataProvider(
         MatchesViewProvider.viewType,
-        new MatchesViewProvider(rootPath, this)
+        this.matchesViewProvider
       )
     )
   }

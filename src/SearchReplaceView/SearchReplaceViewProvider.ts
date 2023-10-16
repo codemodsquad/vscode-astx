@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import {
   AstxRunner,
   AstxRunnerEvents,
+  Params,
   ProgressEvent,
   TransformResultEvent,
 } from '../AstxRunner'
@@ -48,7 +49,7 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
         case 'mount': {
           webviewView.webview.postMessage({
             type: 'values',
-            values: this.runner.params,
+            values: this.extension.getParams(),
           })
           webviewView.webview.postMessage({
             type: 'status',
@@ -129,6 +130,17 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
         this.runner.removeListener(event as keyof AstxRunnerEvents, listener)
       }
     })
+  }
+
+  setParams(params: Params): void {
+    this._view?.webview?.postMessage({
+      type: 'values',
+      values: params,
+    })
+  }
+
+  show(): void {
+    this._view?.show()
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {

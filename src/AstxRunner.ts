@@ -31,7 +31,7 @@ export interface AstxRunnerEvents {
   replaceDone: () => void
 }
 
-type Params = {
+export type Params = {
   find?: string
   replace?: string
   include?: string
@@ -64,6 +64,9 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
 
   constructor(private extension: AstxExtension) {
     super()
+    this.startupPromise.catch(() => {
+      // no-op
+    })
   }
 
   async startup(): Promise<void> {

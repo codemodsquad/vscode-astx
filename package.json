@@ -42,8 +42,21 @@
       {
         "command": "astx.showOutput",
         "title": "astx: Show debug output"
+      },
+      {
+        "command": "astx.searchInDirectory",
+        "title": "astx: Find in path..."
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceDirname",
+          "command": "astx.searchInDirectory",
+          "group": "astxDirectory"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
