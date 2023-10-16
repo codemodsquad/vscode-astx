@@ -84,6 +84,13 @@ export default function SearchReplaceView({
     })
   }, [])
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handlePreferSimpleReplacementChange = React.useCallback((e: any) => {
+    onValuesChange({
+      preferSimpleReplacement: e.target.checked,
+    })
+  }, [])
+
   const handleKeyDown = useEvent((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey || e.metaKey) {
       onValuesChange({})
@@ -190,6 +197,12 @@ export default function SearchReplaceView({
             onChange={handlePrettierChange}
           >
             Use Prettier if Available
+          </VSCodeCheckbox>
+          <VSCodeCheckbox
+            checked={values.preferSimpleReplacement}
+            onChange={handlePreferSimpleReplacementChange}
+          >
+            Prefer Simple Replacement
           </VSCodeCheckbox>
         </div>
       )}

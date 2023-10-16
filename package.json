@@ -19,6 +19,31 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "astx",
+      "properties": {
+        "astx.showErrorNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show notifications when errors occur in this extension"
+        },
+        "astx.astxPath": {
+          "type": "string",
+          "description": "Path to the astx module, eg: ./node_modules/astx."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "astx.restart-worker-pool",
+        "title": "astx: Restart worker pool"
+      },
+      {
+        "command": "astx.showOutput",
+        "title": "astx: Show debug output"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {

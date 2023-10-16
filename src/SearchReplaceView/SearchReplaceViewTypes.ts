@@ -23,6 +23,7 @@ export type SearchReplaceViewValues = {
   parser?: AstxParser
   prettier?: boolean
   babelGeneratorHack?: boolean
+  preferSimpleReplacement?: boolean
 }
 
 export type MessageToWebview =

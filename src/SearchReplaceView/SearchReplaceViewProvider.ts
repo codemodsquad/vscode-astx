@@ -5,7 +5,7 @@ import {
   ProgressEvent,
   TransformResultEvent,
 } from '../AstxRunner'
-import { isProduction } from '../extension'
+import { AstxExtension } from '../extension'
 import {
   MessageFromWebview,
   SearchReplaceViewStatus,
@@ -16,8 +16,9 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView
 
   constructor(
-    private readonly _extensionUri: vscode.Uri,
-    private readonly runner: AstxRunner
+    private extension: AstxExtension,
+    private readonly _extensionUri: vscode.Uri = extension.context.extensionUri,
+    private readonly runner: AstxRunner = extension.runner
   ) {}
 
   public resolveWebviewView(webviewView: vscode.WebviewView): void {
@@ -142,7 +143,7 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
     const csp = [
       `default-src 'none'`,
       `img-src ${`vscode-file://vscode-app`} ${webview.cspSource} 'self'`,
-      ...(isProduction
+      ...(this.extension.isProduction
         ? [
             `script-src 'nonce-${nonce}'`,
             `style-src ${webview.cspSource} 'self' 'unsafe-inline'`,
@@ -173,7 +174,7 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
 			</head>
 			<body>
         ${
-          isProduction
+          this.extension.isProduction
             ? `<script nonce="${nonce}" src="${scriptUri}"></script>`
             : `<script src="http://${webpackOrigin}/SearchReplaceView.js"></script>`
         }

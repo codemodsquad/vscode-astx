@@ -1,7 +1,8 @@
 import { CodeFrameError } from 'astx'
 import * as vscode from 'vscode'
-import { AstxRunner, TransformResultEvent } from './AstxRunner'
+import { TransformResultEvent } from './AstxRunner'
 import { ASTX_RESULT_SCHEME } from './constants'
+import { AstxExtension } from './extension'
 
 export default class TransformResultProvider
   implements vscode.TextDocumentContentProvider, vscode.FileDecorationProvider
@@ -13,7 +14,8 @@ export default class TransformResultProvider
     new Set()
   results: Map<string, TransformResultEvent> = new Map()
 
-  constructor(private runner: AstxRunner) {
+  constructor(private extension: AstxExtension) {
+    const {runner} = extension
     runner.on('stop', () => {
       const uris = [...this.results.keys()].map((raw) => vscode.Uri.parse(raw))
       for (const uri of uris) {

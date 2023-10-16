@@ -1,9 +1,10 @@
 import * as vscode from 'vscode'
 import { FileNodeProps } from './FileNode'
 import { TreeNode } from './TreeNode'
-import { TransformResultEvent, AstxRunner } from '../AstxRunner'
+import { TransformResultEvent } from '../AstxRunner'
 import WorkspaceFolderNode from './WorkspaceFolderNode'
 import { throttle } from 'lodash-es'
+import { AstxExtension } from '../extension'
 
 export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
   static viewType = 'astx.MatchesView'
@@ -12,7 +13,8 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
 
   private fireChange = throttle(() => this._onDidChangeTreeData.fire(), 250)
 
-  constructor(private workspaceRoot: string, private runner: AstxRunner) {
+  constructor(private workspaceRoot: string, private extension: AstxExtension) {
+    const { runner } = extension
     runner.on('stop', () => {
       this.folders.clear()
       this.fireChange()
@@ -29,9 +31,6 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
       }
       this.fireChange()
     })
-
-    // eslint-disable-next-line no-console
-    runner.on('error', (error: Error) => console.error(error.stack))
   }
 
   private _onDidChangeTreeData: vscode.EventEmitter<
