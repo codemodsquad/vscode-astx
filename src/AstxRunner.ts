@@ -111,6 +111,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
   }
 
   async shutdown(): Promise<void> {
+    this.stop()
     await this.pool.end()
   }
 
@@ -125,6 +126,10 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
 
     this.emit('start')
 
+    this.extension.channel.appendLine(
+      `running... ${JSON.stringify(this._params)}`
+    )
+
     const {
       find,
       replace,
@@ -135,6 +140,12 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
     } = this._params
     const workspaceFolders =
       vscode.workspace.workspaceFolders?.map((f) => f.uri.path) || []
+    if (!workspaceFolders.length) {
+      this.extension.channel.appendLine('no workspace folders found')
+    }
+    if (!find?.trim()) {
+      this.extension.channel.appendLine('find expression is empty')
+    }
     if (!workspaceFolders.length || !find?.trim()) {
       this.emit('done')
       return
@@ -233,6 +244,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           this.emit('error', error)
         }
       } finally {
+        this.extension.channel.appendLine('run ended')
         abortController.abort()
         if (this.abortController === abortController) {
           this.abortController = undefined

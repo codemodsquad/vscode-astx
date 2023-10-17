@@ -143,6 +143,10 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
     this._view?.show()
   }
 
+  get visible(): boolean {
+    return this._view?.visible ?? false
+  }
+
   private _getHtmlForWebview(webview: vscode.Webview): string {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(

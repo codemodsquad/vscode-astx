@@ -20,6 +20,7 @@ export class AstxExtension {
   transformResultProvider: TransformResultProvider
   searchReplaceViewProvider: SearchReplaceViewProvider
   matchesViewProvider: MatchesViewProvider | undefined
+  fsWatcher: vscode.FileSystemWatcher | undefined
 
   constructor(public context: vscode.ExtensionContext) {
     this.isProduction =
@@ -107,6 +108,20 @@ export class AstxExtension {
       })
     )
 
+    this.fsWatcher = vscode.workspace.createFileSystemWatcher(
+      '**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'
+    )
+    this.fsWatcher.onDidChange(this.handleFsChange)
+    this.fsWatcher.onDidCreate(this.handleFsChange)
+    this.fsWatcher.onDidDelete(this.handleFsChange)
+    context.subscriptions.push(this.fsWatcher)
+
+    vscode.workspace.onDidChangeTextDocument(
+      this.handleTextDocumentChange,
+      this,
+      context.subscriptions
+    )
+
     context.subscriptions.push(
       vscode.commands.registerCommand(
         'astx.searchInDirectory',
@@ -176,6 +191,21 @@ export class AstxExtension {
 
   async deactivate(): Promise<void> {
     await this.runner.shutdown()
+  }
+
+  handleFsChange = (): void => {
+    if (this.searchReplaceViewProvider.visible) {
+      this.runner.runSoon()
+    }
+  }
+
+  handleTextDocumentChange = (e: vscode.TextDocumentChangeEvent): void => {
+    if (
+      this.searchReplaceViewProvider.visible &&
+      e.document.uri.scheme === 'file'
+    ) {
+      this.runner.runSoon()
+    }
   }
 }
 
