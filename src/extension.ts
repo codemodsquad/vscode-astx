@@ -8,7 +8,7 @@ import { SearchReplaceViewProvider } from './SearchReplaceView/SearchReplaceView
 import TransformResultProvider from './TransformResultProvider'
 import type * as AstxNodeTypes from 'astx/node'
 import fs from 'fs-extra'
-import path from 'path'
+import path, { resolve } from 'path'
 
 let extension: AstxExtension
 
@@ -42,16 +42,12 @@ export class AstxExtension {
         subpath =
           typeof pkg.exports['./node'] === 'string'
             ? pkg.exports['./node']
-            : pkg.exports['./node'].import ??
-              pkg.exports['./node'].require ??
-              pkg.exports['./node'].default
+            : pkg.exports['./node'].require ?? pkg.exports['./node'].default
       } else if (pkg.exports['./*']) {
         subpath = (
           typeof pkg.exports['./*'] === 'string'
             ? pkg.exports['./*']
-            : pkg.exports['./*'].import ??
-              pkg.exports['./*'].require ??
-              pkg.exports['./*'].default
+            : pkg.exports['./*'].require ?? pkg.exports['./*'].default
         )?.replace('*', 'node')
       }
       if (!subpath) {
@@ -59,12 +55,9 @@ export class AstxExtension {
           `failed to find export map entry for ./node or a matching pattern`
         )
       }
-      this.channel.appendLine(
-        `resolved to ${path.join(config.astxPath, subpath)}`
-      )
-      return await import(
-        /* webpackIgnore: true */ path.join(config.astxPath, subpath)
-      )
+      const resolvedPath = path.join(config.astxPath, subpath)
+      this.channel.appendLine(`resolved to ${resolvedPath}`)
+      return require(/* webpackIgnore: true */ resolvedPath)
     })()
 
     this.channel.appendLine(

@@ -33,6 +33,11 @@ module.exports = {
     conditionNames: ['import', 'require', 'node'],
   },
   module: {
+    parser: {
+      javascript: {
+        commonjsMagicComments: true,
+      },
+    },
     rules: [
       {
         test: /\.ts$/,
