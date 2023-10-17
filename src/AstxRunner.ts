@@ -7,6 +7,7 @@ import { debounce, isEqual } from 'lodash'
 import { convertGlobPattern, joinPatterns } from './glob/convertGlobPattern'
 import { AstxParser } from './SearchReplaceView/SearchReplaceViewTypes'
 import { AstxExtension } from './extension'
+import fs from 'fs/promises'
 
 export type TransformResultEvent = {
   file: vscode.Uri
@@ -19,6 +20,11 @@ export type TransformResultEvent = {
 export type ProgressEvent = {
   completed: number
   total: number
+}
+
+interface FsEntry {
+  name: string
+  isDirectory(): boolean
 }
 
 export interface AstxRunnerEvents {
@@ -145,6 +151,32 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
       replace,
     }
 
+    const fileDocs: Map<string, vscode.TextDocument> = new Map()
+    for (const doc of vscode.workspace.textDocuments) {
+      if (doc.uri.scheme === 'file') fileDocs.set(doc.uri.fsPath, doc)
+    }
+
+    const Fs = {
+      readFile: async (file: string, encoding: string): Promise<string> => {
+        const doc = fileDocs.get(file)
+        if (doc) return doc.getText()
+        const raw = await vscode.workspace.fs.readFile(vscode.Uri.file(file))
+        return new TextDecoder(encoding === 'utf8' ? 'utf-8' : encoding).decode(
+          raw
+        )
+      },
+      readdir: async (dir: string): Promise<FsEntry[]> => {
+        const entries = await vscode.workspace.fs.readDirectory(
+          vscode.Uri.file(dir)
+        )
+        return entries.map(([name, type]) => ({
+          name,
+          isDirectory: () => (type & vscode.FileType.Directory) !== 0,
+        }))
+      },
+      realpath: fs.realpath,
+    }
+
     ;(async () => {
       try {
         await this.startupPromise
@@ -162,6 +194,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
             prettier,
             preferSimpleReplacement,
           },
+          fs: Fs,
         })) {
           if (signal?.aborted) return
           if (next.type === 'progress') {
