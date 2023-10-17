@@ -14,6 +14,7 @@ export type TransformResultEvent = {
   file: vscode.Uri
   source: string
   transformed?: string
+  reports?: unknown[]
   matches: readonly IpcMatch[]
   error?: Error
 }
@@ -234,7 +235,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
             continue
           }
           const {
-            result: { file, source = '', transformed, matches, error },
+            result: { file, source = '', transformed, matches, reports, error },
           } = next
           if (transformed) {
             this.transformResults.set(file, {
@@ -244,6 +245,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           }
           if (
             !matches?.length &&
+            !reports?.length &&
             !error &&
             (transformed == null || transformed === source)
           ) {
@@ -253,6 +255,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
             file: vscode.Uri.file(file),
             source,
             transformed,
+            reports,
             matches: matches || [],
             error: error ? this.astxNode.invertIpcError(error) : null,
           }

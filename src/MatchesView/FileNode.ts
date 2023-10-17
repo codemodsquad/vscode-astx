@@ -7,12 +7,13 @@ import MatchNode from './MatchNode'
 import path from 'path'
 import { once } from 'lodash-es'
 import LeafTreeItemNode from './LeafTreeItemNode'
-import { ASTX_RESULT_SCHEME } from '../constants'
+import { ASTX_REPORTS_SCHEME, ASTX_RESULT_SCHEME } from '../constants'
 
 export type FileNodeProps = {
   file: Uri
   source: string
   transformed?: string
+  reports?: readonly unknown[]
   matches: readonly IpcMatch[]
   error?: Error
 }
@@ -30,10 +31,10 @@ export default class FileNode extends TreeNode<FileNodeProps> {
     return error.stack || error.message || String(error)
   }
   getTreeItem(): TreeItem {
-    const { file, transformed, matches } = this.props
+    const { file, transformed, reports, matches } = this.props
     const item = new TreeItem(
       file.with({ scheme: ASTX_RESULT_SCHEME }),
-      matches.length
+      matches.length || reports?.length
         ? TreeItemCollapsibleState.Expanded
         : TreeItemCollapsibleState.None
     )
@@ -82,7 +83,7 @@ export default class FileNode extends TreeNode<FileNodeProps> {
   getChildren: () => TreeNode[] = once((): TreeNode[] => {
     const {
       errorMessage,
-      props: { matches },
+      props: { file, matches, reports },
     } = this
     if (errorMessage) {
       const message = errorMessage.split(/\r\n?|\n/gm)
@@ -90,14 +91,26 @@ export default class FileNode extends TreeNode<FileNodeProps> {
         (line) => new LeafTreeItemNode({ item: new TreeItem(line) })
       )
     }
-    return matches.map(
-      (match) =>
-        new MatchNode(
-          {
-            match,
-          },
-          this
-        )
-    )
+    let reportsItem: TreeItem | undefined
+    if (reports?.length) {
+      reportsItem = new TreeItem('Reports')
+      reportsItem.command = {
+        title: 'open reports',
+        command: 'vscode.open',
+        arguments: [file.with({ scheme: ASTX_REPORTS_SCHEME })],
+      }
+    }
+    return [
+      ...(reportsItem ? [new LeafTreeItemNode({ item: reportsItem })] : []),
+      ...matches.map(
+        (match) =>
+          new MatchNode(
+            {
+              match,
+            },
+            this
+          )
+      ),
+    ]
   })
 }

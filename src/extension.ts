@@ -2,13 +2,13 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
 import { AstxRunner, Params } from './AstxRunner'
-import { ASTX_RESULT_SCHEME } from './constants'
+import { ASTX_REPORTS_SCHEME, ASTX_RESULT_SCHEME } from './constants'
 import { MatchesViewProvider } from './MatchesView/MatchesViewProvider'
 import { SearchReplaceViewProvider } from './SearchReplaceView/SearchReplaceViewProvider'
 import TransformResultProvider from './TransformResultProvider'
 import type * as AstxNodeTypes from 'astx/node'
 import fs from 'fs-extra'
-import path, { resolve } from 'path'
+import path from 'path'
 
 let extension: AstxExtension
 
@@ -176,6 +176,10 @@ export class AstxExtension {
     context.subscriptions.push(
       vscode.workspace.registerTextDocumentContentProvider(
         ASTX_RESULT_SCHEME,
+        this.transformResultProvider
+      ),
+      vscode.workspace.registerTextDocumentContentProvider(
+        ASTX_REPORTS_SCHEME,
         this.transformResultProvider
       )
     )

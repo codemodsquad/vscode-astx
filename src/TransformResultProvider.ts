@@ -1,7 +1,7 @@
 import { CodeFrameError } from 'astx'
 import * as vscode from 'vscode'
 import { TransformResultEvent } from './AstxRunner'
-import { ASTX_RESULT_SCHEME } from './constants'
+import { ASTX_REPORTS_SCHEME, ASTX_RESULT_SCHEME } from './constants'
 import { AstxExtension } from './extension'
 
 export default class TransformResultProvider
@@ -30,7 +30,7 @@ export default class TransformResultProvider
     })
     runner.on('result', (event: TransformResultEvent) => {
       const { file } = event
-      const uri = file.with({ scheme: ASTX_RESULT_SCHEME })
+      const uri = file.with({ scheme: 'file' })
       this.results.set(uri.toString(), event)
       for (const listener of this.contentListeners) listener(uri)
       for (const listener of this.decorationListeners) listener(uri)
@@ -43,16 +43,29 @@ export default class TransformResultProvider
   }
 
   provideTextDocumentContent(uri: vscode.Uri): string {
-    const { transformed, error } = this.results.get(uri.toString()) || {}
-    if (transformed) return transformed
-    if (error) {
-      if (error instanceof CodeFrameError) {
-        return error.format({
-          highlightCode: true,
-          stack: true,
-        })
+    const result = this.results.get(uri.with({ scheme: 'file' }).toString())
+    switch (uri.scheme) {
+      case ASTX_RESULT_SCHEME: {
+        const transformed = result?.transformed
+        if (transformed) return transformed
+        const error = result?.error
+
+        if (error) {
+          if (error instanceof CodeFrameError) {
+            return error.format({
+              highlightCode: true,
+              stack: true,
+            })
+          }
+          return error.stack || error.message || String(error)
+        }
+        break
       }
-      return error.stack || error.message || String(error)
+      case ASTX_REPORTS_SCHEME: {
+        return (result?.reports || [])
+          ?.map((report) => JSON.stringify(report, null, 2))
+          .join('\n')
+      }
     }
     return ''
   }
