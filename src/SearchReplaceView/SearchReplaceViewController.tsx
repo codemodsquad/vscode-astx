@@ -64,6 +64,7 @@ export default function SearchReplaceViewController({
     replace: '',
     include: '',
     exclude: '',
+    transformFile: '',
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -26,7 +26,7 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
       if (!forFolder) {
         this.folders.set(workspaceFolder, (forFolder = { files: [] }))
       }
-      if (event.matches?.length || event.error) {
+      if (event.matches?.length || event.error || event.transformed) {
         forFolder.files.push(event)
       }
       this.fireChange()

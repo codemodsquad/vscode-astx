@@ -18,6 +18,8 @@ export type AstxParser =
 export type SearchReplaceViewValues = {
   find: string
   replace: string
+  useTransformFile?: boolean
+  transformFile: string
   include: string
   exclude: string
   parser?: AstxParser

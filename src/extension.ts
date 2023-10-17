@@ -131,28 +131,12 @@ export class AstxExtension {
 
     context.subscriptions.push(
       vscode.commands.registerCommand(
-        'astx.searchInDirectory',
-        (dir: vscode.Uri, arg2: vscode.Uri[]) => {
-          const dirs =
-            Array.isArray(arg2) &&
-            arg2.every((item) => item instanceof vscode.Uri)
-              ? arg2
-              : [dir]
+        'astx.setAsTransformFile',
+        (transformFile: vscode.Uri) => {
           const newParams = {
             ...this.getParams(),
-            include: dirs
-              .map((dir) => {
-                const folder = vscode.workspace.getWorkspaceFolder(dir)
-                return folder
-                  ? `${
-                      (vscode.workspace.workspaceFolders?.length ?? 0) > 1
-                        ? path.basename(folder.uri.path) + '/'
-                        : './'
-                    }${path.relative(folder.uri.path, dir.path)}`
-                  : dir.fsPath
-              })
-              .join(', '),
-            exclude: '',
+            useTransformFile: true,
+            transformFile: normalizeTransformFilePath(transformFile),
           }
           this.setParams(newParams)
           vscode.commands.executeCommand(
@@ -160,6 +144,40 @@ export class AstxExtension {
           )
         }
       )
+    )
+
+    const findInPath = (dir: vscode.Uri, arg2: vscode.Uri[]) => {
+      const dirs =
+        Array.isArray(arg2) && arg2.every((item) => item instanceof vscode.Uri)
+          ? arg2
+          : [dir]
+      const newParams: Params = {
+        ...this.getParams(),
+        useTransformFile: false,
+        include: dirs
+          .map((dir) => {
+            const folder = vscode.workspace.getWorkspaceFolder(dir)
+            return folder
+              ? `${
+                  (vscode.workspace.workspaceFolders?.length ?? 0) > 1
+                    ? path.basename(folder.uri.path) + '/'
+                    : ''
+                }${path.relative(folder.uri.path, dir.path)}`
+              : dir.fsPath
+          })
+          .join(', '),
+      }
+      this.setParams(newParams)
+      vscode.commands.executeCommand(
+        `${SearchReplaceViewProvider.viewType}.focus`
+      )
+    }
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand('astx.findInFile', findInPath)
+    )
+    context.subscriptions.push(
+      vscode.commands.registerCommand('astx.findInFolder', findInPath)
     )
 
     context.subscriptions.push(
@@ -202,7 +220,11 @@ export class AstxExtension {
     await this.runner.shutdown()
   }
 
-  handleFsChange = (): void => {
+  handleFsChange = (uri: vscode.Uri): void => {
+    const { transformFile } = this.getParams()
+    if (transformFile && normalizeTransformFilePath(uri) === transformFile) {
+      this.runner.restart()
+    }
     if (this.searchReplaceViewProvider.visible) {
       this.runner.runSoon()
     }
@@ -226,4 +248,15 @@ export function activate(context: vscode.ExtensionContext): void {
 export async function deactivate(): Promise<void> {
   // eslint-disable-next-line no-console
   await extension?.deactivate().catch((error) => console.error(error))
+}
+
+function normalizeTransformFilePath(transformFile: vscode.Uri): string {
+  const folder = vscode.workspace.getWorkspaceFolder(transformFile)
+  return folder
+    ? `${
+        (vscode.workspace.workspaceFolders?.length ?? 0) > 1
+          ? path.basename(transformFile.path) + '/'
+          : ''
+      }${path.relative(folder.uri.path, transformFile.path)}`
+    : transformFile.fsPath
 }

@@ -35,60 +35,57 @@ export default function SearchReplaceView({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onReplaceAllClick: (e: React.SyntheticEvent<any>) => unknown
 }): React.ReactElement {
+  const handleUseFindReplaceClick = React.useCallback(() => {
+    onValuesChange({ useTransformFile: false })
+  }, [])
+
+  const handleUseTransformFileClick = React.useCallback(() => {
+    onValuesChange({ useTransformFile: true })
+  }, [])
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFindChange = React.useCallback((e: any) => {
-    onValuesChange({
-      find: e.target.value,
-    })
+    onValuesChange({ find: e.target.value })
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleReplaceChange = React.useCallback((e: any) => {
-    onValuesChange({
-      replace: e.target.value,
-    })
+    onValuesChange({ replace: e.target.value })
+  }, [])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleTransformFileChange = React.useCallback((e: any) => {
+    onValuesChange({ transformFile: e.target.value })
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleIncludeChange = React.useCallback((e: any) => {
-    onValuesChange({
-      include: e.target.value,
-    })
+    onValuesChange({ include: e.target.value })
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleExcludeChange = React.useCallback((e: any) => {
-    onValuesChange({
-      exclude: e.target.value,
-    })
+    onValuesChange({ exclude: e.target.value })
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleParserChange = React.useCallback((e: any) => {
-    onValuesChange({
-      parser: e.target.value,
-    })
+    onValuesChange({ parser: e.target.value })
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handlePrettierChange = React.useCallback((e: any) => {
-    onValuesChange({
-      prettier: e.target.checked,
-    })
+    onValuesChange({ prettier: e.target.checked })
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBabelGeneratorHackChange = React.useCallback((e: any) => {
-    onValuesChange({
-      babelGeneratorHack: e.target.checked,
-    })
+    onValuesChange({ babelGeneratorHack: e.target.checked })
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handlePreferSimpleReplacementChange = React.useCallback((e: any) => {
-    onValuesChange({
-      preferSimpleReplacement: e.target.checked,
-    })
+    onValuesChange({ preferSimpleReplacement: e.target.checked })
   }, [])
 
   const handleKeyDown = useEvent((e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -110,24 +107,66 @@ export default function SearchReplaceView({
         flex-direction: column;
       `}
     >
-      <VSCodeTextArea
+      <div
         className={css`
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
           margin-top: 8px;
         `}
-        placeholder="Search"
-        name="search"
-        value={values.find}
-        onInput={handleFindChange}
-      />
-      <VSCodeTextArea
-        className={css`
-          margin-top: 4px;
-        `}
-        placeholder="Replace"
-        name="replace"
-        value={values.replace}
-        onInput={handleReplaceChange}
-      />
+      >
+        <VSCodeButton
+          className={css`
+            flex: 1 1 auto;
+          `}
+          appearance={values.useTransformFile ? 'secondary' : 'primary'}
+          onClick={handleUseFindReplaceClick}
+        >
+          Find/Replace
+        </VSCodeButton>
+        <VSCodeButton
+          className={css`
+            flex: 1 1 auto;
+          `}
+          appearance={values.useTransformFile ? 'primary' : 'secondary'}
+          onClick={handleUseTransformFileClick}
+        >
+          TransformFile
+        </VSCodeButton>
+      </div>
+      {values.useTransformFile ? (
+        <VSCodeTextField
+          className={css`
+            margin-top: 8px;
+          `}
+          placeholder="Transform File"
+          name="transformFile"
+          value={values.transformFile}
+          onInput={handleTransformFileChange}
+        />
+      ) : (
+        <>
+          <VSCodeTextArea
+            className={css`
+              margin-top: 8px;
+            `}
+            placeholder="Search"
+            name="search"
+            value={values.find}
+            onInput={handleFindChange}
+          />
+          <VSCodeTextArea
+            className={css`
+              margin-top: 4px;
+            `}
+            placeholder="Replace"
+            name="replace"
+            value={values.replace}
+            onInput={handleReplaceChange}
+          />
+        </>
+      )}
+
       <div
         className={css`
           display: flex;

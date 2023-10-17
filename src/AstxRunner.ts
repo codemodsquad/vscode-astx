@@ -7,6 +7,7 @@ import { debounce, isEqual } from 'lodash'
 import { convertGlobPattern, joinPatterns } from './glob/convertGlobPattern'
 import { AstxParser } from './SearchReplaceView/SearchReplaceViewTypes'
 import { AstxExtension } from './extension'
+import path from 'path'
 import fs from 'fs/promises'
 
 export type TransformResultEvent = {
@@ -40,6 +41,8 @@ export interface AstxRunnerEvents {
 export type Params = {
   find?: string
   replace?: string
+  useTransformFile?: boolean
+  transformFile?: string
   include?: string
   exclude?: string
   parser?: AstxParser
@@ -133,22 +136,36 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
     const {
       find,
       replace,
+      useTransformFile,
       parser,
       prettier,
       babelGeneratorHack,
       preferSimpleReplacement,
     } = this._params
+    let { transformFile } = this._params
     const workspaceFolders =
       vscode.workspace.workspaceFolders?.map((f) => f.uri.path) || []
+
     if (!workspaceFolders.length) {
       this.extension.channel.appendLine('no workspace folders found')
-    }
-    if (!find?.trim()) {
-      this.extension.channel.appendLine('find expression is empty')
-    }
-    if (!workspaceFolders.length || !find?.trim()) {
       this.emit('done')
       return
+    }
+    if (useTransformFile) {
+      if (!transformFile) {
+        this.extension.channel.appendLine('no transform file')
+        this.emit('done')
+        return
+      }
+      if (workspaceFolders.length === 1) {
+        transformFile = path.resolve(workspaceFolders[0], transformFile)
+      }
+    } else {
+      if (!find?.trim()) {
+        this.extension.channel.appendLine('find expression is empty')
+        this.emit('done')
+        return
+      }
     }
 
     const include = this._params.include
@@ -194,7 +211,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
         for await (const next of this.pool.runTransform({
           paths: [include],
           exclude,
-          transform,
+          ...(useTransformFile ? { transformFile } : { transform }),
           config: {
             parser,
             parserOptions:
@@ -225,7 +242,13 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
               transformed,
             })
           }
-          if (!matches?.length && !error) continue
+          if (
+            !matches?.length &&
+            !error &&
+            (transformed == null || transformed === source)
+          ) {
+            continue
+          }
           const event: TransformResultEvent = {
             file: vscode.Uri.file(file),
             source,

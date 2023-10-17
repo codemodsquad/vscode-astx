@@ -36,28 +36,70 @@
     },
     "commands": [
       {
-        "command": "astx.restart-worker-pool",
-        "title": "astx: Restart worker pool"
+        "command": "astx.restartWorkerPool",
+        "title": "astx: Restart Worker Pool"
       },
       {
         "command": "astx.showOutput",
-        "title": "astx: Show debug output"
+        "title": "astx: Show Debug Output"
       },
       {
         "command": "astx.search",
-        "title": "astx: Find/replace..."
+        "title": "astx: Find/Replace..."
       },
       {
-        "command": "astx.searchInDirectory",
-        "title": "astx: Find in path..."
+        "command": "astx.setAsTransformFile",
+        "title": "astx: Set as Transform File"
+      },
+      {
+        "command": "astx.findInFile",
+        "title": "astx: Find in File..."
+      },
+      {
+        "command": "astx.findInFolder",
+        "title": "astx: Find in Folder..."
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "when": "resourceDirname",
-          "command": "astx.searchInDirectory",
-          "group": "astxDirectory"
+          "when": "explorerResourceIsFolder",
+          "command": "astx.findInFolder",
+          "group": "astx"
+        },
+        {
+          "when": "!explorerResourceIsFolder",
+          "command": "astx.findInFile",
+          "group": "astx"
+        },
+        {
+          "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .ts",
+          "command": "astx.setAsTransformFile",
+          "group": "astx"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .ts",
+          "command": "astx.setAsTransformFile",
+          "group": "astx"
+        },
+        {
+          "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .jsx || resourceExtname == .ts || resourceExtname == .tsx || resourceExtname == .cts || resourceExtname == .mts",
+          "command": "astx.findInFile",
+          "group": "astx"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .ts",
+          "command": "astx.setAsTransformFile",
+          "group": "astx"
+        },
+        {
+          "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .jsx || resourceExtname == .ts || resourceExtname == .tsx || resourceExtname == .cts || resourceExtname == .mts",
+          "command": "astx.findInFile",
+          "group": "astx"
         }
       ]
     },

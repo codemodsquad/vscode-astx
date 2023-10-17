@@ -49,8 +49,8 @@ export default class FileNode extends TreeNode<FileNodeProps> {
         arguments: [file.with({ scheme: ASTX_RESULT_SCHEME })],
       }
     } else {
-      const { nodes } = matches[0]
-      const { start, startLine, startColumn } = nodes?.[0]?.location || {}
+      const nodes = matches[0]?.nodes
+      const { startLine, startColumn } = nodes?.[0]?.location || {}
       item.command = {
         title: transformed ? 'open diff' : 'open file',
         command: transformed ? 'vscode.diff' : 'vscode.open',
