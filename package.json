@@ -316,7 +316,7 @@
     "@repeaterjs/repeater": "^3.0.4",
     "@vscode/codicons": "^0.0.32",
     "@vscode/webview-ui-toolkit": "^1.2.2",
-    "astx": "^2.2.2",
+    "astx": "3.0.0-beta.2",
     "babel-parse-wild-code": "^1.2.0",
     "empty": "^0.10.1",
     "gitignore-fs": "^2.1.0",
