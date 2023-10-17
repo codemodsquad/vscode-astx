@@ -107,6 +107,13 @@ export class AstxExtension {
         this.channel.show()
       })
     )
+    context.subscriptions.push(
+      vscode.commands.registerCommand('astx.search', () => {
+        vscode.commands.executeCommand(
+          `${SearchReplaceViewProvider.viewType}.focus`
+        )
+      })
+    )
 
     this.fsWatcher = vscode.workspace.createFileSystemWatcher(
       '**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'
@@ -148,7 +155,9 @@ export class AstxExtension {
             exclude: '',
           }
           this.setParams(newParams)
-          this.searchReplaceViewProvider.show()
+          vscode.commands.executeCommand(
+            `${SearchReplaceViewProvider.viewType}.focus`
+          )
         }
       )
     )

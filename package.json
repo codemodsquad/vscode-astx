@@ -44,6 +44,10 @@
         "title": "astx: Show debug output"
       },
       {
+        "command": "astx.search",
+        "title": "astx: Find/replace..."
+      },
+      {
         "command": "astx.searchInDirectory",
         "title": "astx: Find in path..."
       }
