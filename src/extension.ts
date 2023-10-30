@@ -90,7 +90,7 @@ export class AstxExtension {
     context.subscriptions.push(this.channel)
 
     context.subscriptions.push(
-      vscode.commands.registerCommand('astx.restart-worker-pool', () =>
+      vscode.commands.registerCommand('astx.restartWorkerPool', () =>
         this.runner.restart()
       )
     )
