@@ -9,6 +9,7 @@ import { AstxParser } from './SearchReplaceView/SearchReplaceViewTypes'
 import { AstxExtension } from './extension'
 import path from 'path'
 import fs from 'fs/promises'
+import os from 'os'
 
 export type TransformResultEvent = {
   file: vscode.Uri
@@ -158,6 +159,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
         this.emit('done')
         return
       }
+      transformFile = transformFile.trim().replace(/^~/, os.homedir())
       if (workspaceFolders.length === 1) {
         transformFile = path.resolve(workspaceFolders[0], transformFile)
       }
