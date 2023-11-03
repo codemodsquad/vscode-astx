@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
+import os from 'os'
 import { AstxRunner, Params } from './AstxRunner'
 import { ASTX_REPORTS_SCHEME, ASTX_RESULT_SCHEME } from './constants'
 import { MatchesViewProvider } from './MatchesView/MatchesViewProvider'
@@ -77,6 +78,21 @@ export class AstxExtension {
     }
   }
 
+  resolveFsPath(fsPath: string): vscode.Uri {
+    fsPath = fsPath.trim().replace(/^~/, os.homedir())
+    if (!path.isAbsolute(fsPath)) {
+      const { workspaceFolders = [] } = vscode.workspace
+      let folder =
+        workspaceFolders.length === 1 ? workspaceFolders[0] : undefined
+      if (workspaceFolders.length > 1) {
+        const topDir = fsPath.split(path.sep)[0]
+        folder = workspaceFolders.find((f) => f.name === topDir)
+      }
+      if (folder) fsPath = path.resolve(folder.uri.fsPath, fsPath)
+    }
+    return vscode.Uri.parse(fsPath)
+  }
+
   getParams(): Params {
     return this.runner.params
   }
@@ -127,11 +143,15 @@ export class AstxExtension {
     context.subscriptions.push(
       vscode.commands.registerCommand(
         'astx.setAsTransformFile',
-        (transformFile: vscode.Uri) => {
+        (
+          transformFile: vscode.Uri | undefined = vscode.window.activeTextEditor
+            ?.document.uri
+        ) => {
+          if (!transformFile) return
           const newParams = {
             ...this.getParams(),
             useTransformFile: true,
-            transformFile: normalizeTransformFilePath(transformFile),
+            transformFile: normalizeFsPath(transformFile),
           }
           this.setParams(newParams)
           vscode.commands.executeCommand(
@@ -145,22 +165,14 @@ export class AstxExtension {
       const dirs =
         Array.isArray(arg2) && arg2.every((item) => item instanceof vscode.Uri)
           ? arg2
-          : [dir]
+          : [dir || vscode.window.activeTextEditor?.document.uri].filter(
+              (x): x is vscode.Uri => x instanceof vscode.Uri
+            )
+      if (!dirs.length) return
       const newParams: Params = {
         ...this.getParams(),
         useTransformFile: false,
-        include: dirs
-          .map((dir) => {
-            const folder = vscode.workspace.getWorkspaceFolder(dir)
-            return folder
-              ? `${
-                  (vscode.workspace.workspaceFolders?.length ?? 0) > 1
-                    ? path.basename(folder.uri.path) + '/'
-                    : ''
-                }${path.relative(folder.uri.path, dir.path)}`
-              : dir.fsPath
-          })
-          .join(', '),
+        include: dirs.map(normalizeFsPath).join(', '),
       }
       this.setParams(newParams)
       vscode.commands.executeCommand(
@@ -223,7 +235,10 @@ export class AstxExtension {
 
   handleFsChange = (uri: vscode.Uri): void => {
     const { transformFile } = this.getParams()
-    if (transformFile && normalizeTransformFilePath(uri) === transformFile) {
+    if (
+      transformFile &&
+      uri.toString() === this.resolveFsPath(transformFile).toString()
+    ) {
       this.runner.restart()
     }
     if (this.searchReplaceViewProvider.visible) {
@@ -251,13 +266,13 @@ export async function deactivate(): Promise<void> {
   await extension?.deactivate().catch((error) => console.error(error))
 }
 
-function normalizeTransformFilePath(transformFile: vscode.Uri): string {
-  const folder = vscode.workspace.getWorkspaceFolder(transformFile)
+function normalizeFsPath(uri: vscode.Uri): string {
+  const folder = vscode.workspace.getWorkspaceFolder(uri)
   return folder
     ? `${
         (vscode.workspace.workspaceFolders?.length ?? 0) > 1
-          ? path.basename(transformFile.path) + '/'
+          ? path.basename(folder.uri.path) + '/'
           : ''
-      }${path.relative(folder.uri.path, transformFile.path)}`
-    : transformFile.fsPath
+      }${path.relative(folder.uri.path, uri.path)}`
+    : uri.fsPath
 }

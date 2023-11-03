@@ -159,10 +159,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
         this.emit('done')
         return
       }
-      transformFile = transformFile.trim().replace(/^~/, os.homedir())
-      if (workspaceFolders.length === 1) {
-        transformFile = path.resolve(workspaceFolders[0], transformFile)
-      }
+      transformFile = this.extension.resolveFsPath(transformFile).fsPath
     } else {
       if (!find?.trim()) {
         this.extension.channel.appendLine('find expression is empty')
