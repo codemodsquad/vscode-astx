@@ -7,9 +7,7 @@ import { debounce, isEqual } from 'lodash'
 import { convertGlobPattern, joinPatterns } from './glob/convertGlobPattern'
 import { AstxParser } from './SearchReplaceView/SearchReplaceViewTypes'
 import { AstxExtension } from './extension'
-import path from 'path'
 import fs from 'fs/promises'
-import os from 'os'
 
 export type TransformResultEvent = {
   file: vscode.Uri

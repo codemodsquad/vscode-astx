@@ -7,39 +7,30 @@ import { AstxExtension } from './extension'
 export default class TransformResultProvider
   implements vscode.TextDocumentContentProvider, vscode.FileDecorationProvider
 {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  contentListeners: Set<(uri: vscode.Uri) => any> = new Set()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  decorationListeners: Set<(changed: vscode.Uri | vscode.Uri[]) => any> =
-    new Set()
   results: Map<string, TransformResultEvent> = new Map()
 
   constructor(private extension: AstxExtension) {
     const { runner } = extension
     runner.on('stop', () => {
-      const uris = [...this.results.keys()].map((raw) => vscode.Uri.parse(raw))
-      for (const uri of uris) {
-        for (const listener of this.contentListeners) {
-          listener(uri)
-        }
-      }
-      for (const listener of this.decorationListeners) {
-        listener(uris)
-      }
+      const uris = [...this.results.keys()].flatMap((raw) => [
+        vscode.Uri.parse(raw).with({ scheme: ASTX_RESULT_SCHEME }),
+        vscode.Uri.parse(raw).with({ scheme: ASTX_REPORTS_SCHEME }),
+      ])
       this.results.clear()
+      this._onDidChangeFileDecorations.fire(uris)
+      for (const uri of uris) this._onDidChange.fire(uri)
     })
     runner.on('result', (event: TransformResultEvent) => {
       const { file } = event
       const uri = file.with({ scheme: 'file' })
       this.results.set(uri.toString(), event)
-      for (const listener of this.contentListeners) listener(uri)
-      for (const listener of this.decorationListeners) listener(uri)
+      const uris = [
+        event.file.with({ scheme: ASTX_RESULT_SCHEME }),
+        event.file.with({ scheme: ASTX_REPORTS_SCHEME }),
+      ]
+      for (const uri of uris) this._onDidChange.fire(uri)
+      this._onDidChangeFileDecorations.fire(uris)
     })
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onDidChange(listener: (uri: vscode.Uri) => any): vscode.Disposable {
-    this.contentListeners.add(listener)
-    return new vscode.Disposable(() => this.contentListeners.delete(listener))
   }
 
   provideTextDocumentContent(uri: vscode.Uri): string {
@@ -70,19 +61,23 @@ export default class TransformResultProvider
     return ''
   }
 
-  onDidChangeFileDecorations(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: (uris: vscode.Uri | vscode.Uri[]) => any
-  ): vscode.Disposable {
-    this.decorationListeners.add(listener)
-    return new vscode.Disposable(() =>
-      this.decorationListeners.delete(listener)
-    )
-  }
+  private _onDidChange: vscode.EventEmitter<vscode.Uri> =
+    new vscode.EventEmitter<vscode.Uri>()
+
+  readonly onDidChange = this._onDidChange.event
+
+  private _onDidChangeFileDecorations: vscode.EventEmitter<
+    vscode.Uri | vscode.Uri[] | undefined
+  > = new vscode.EventEmitter<vscode.Uri | vscode.Uri[] | undefined>()
+
+  readonly onDidChangeFileDecorations = this._onDidChangeFileDecorations.event
+
   provideFileDecoration(
     uri: vscode.Uri
   ): vscode.ProviderResult<vscode.FileDecoration> {
-    const error = this.results.get(uri.toString())?.error
+    const error = this.results.get(
+      uri.with({ scheme: 'file' }).toString()
+    )?.error
     if (error) {
       return new vscode.FileDecoration(
         '!',
