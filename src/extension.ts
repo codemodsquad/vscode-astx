@@ -9,6 +9,7 @@ import TransformResultProvider from './TransformResultProvider'
 import type * as AstxNodeTypes from 'astx/node'
 import fs from 'fs-extra'
 import path from 'path'
+import MatchesDecorationProvider from './MatchesView/MatchesDecorationProvider'
 
 let extension: AstxExtension
 
@@ -20,6 +21,7 @@ export class AstxExtension {
   transformResultProvider: TransformResultProvider
   searchReplaceViewProvider: SearchReplaceViewProvider
   matchesViewProvider: MatchesViewProvider | undefined
+  matchesDecorationProvider: MatchesDecorationProvider | undefined
   fsWatcher: vscode.FileSystemWatcher | undefined
 
   constructor(public context: vscode.ExtensionContext) {
@@ -199,16 +201,18 @@ export class AstxExtension {
         }
       )
     )
-    const rootPath =
-      vscode.workspace.workspaceFolders &&
-      vscode.workspace.workspaceFolders.length > 0
-        ? vscode.workspace.workspaceFolders[0].uri.fsPath
-        : ''
-    this.matchesViewProvider = new MatchesViewProvider(rootPath, this)
+    this.matchesViewProvider = new MatchesViewProvider(this)
     context.subscriptions.push(
       vscode.window.registerTreeDataProvider(
         MatchesViewProvider.viewType,
         this.matchesViewProvider
+      )
+    )
+
+    this.matchesDecorationProvider = new MatchesDecorationProvider(this)
+    context.subscriptions.push(
+      vscode.window.registerFileDecorationProvider(
+        this.matchesDecorationProvider
       )
     )
   }

@@ -13,7 +13,7 @@ export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {
 
   private fireChange = throttle(() => this._onDidChangeTreeData.fire(), 250)
 
-  constructor(private workspaceRoot: string, private extension: AstxExtension) {
+  constructor(private extension: AstxExtension) {
     const { runner } = extension
     runner.on('stop', () => {
       this.folders.clear()
