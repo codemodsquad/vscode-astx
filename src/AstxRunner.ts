@@ -234,12 +234,6 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           const {
             result: { file, source = '', transformed, matches, reports, error },
           } = next
-          if (transformed) {
-            this.transformResults.set(file, {
-              source,
-              transformed,
-            })
-          }
           if (
             !matches?.length &&
             !reports?.length &&
@@ -247,6 +241,12 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
             (transformed == null || transformed === source)
           ) {
             continue
+          }
+          if (transformed != null && transformed !== source) {
+            this.transformResults.set(file, {
+              source,
+              transformed,
+            })
           }
           const event: TransformResultEvent = {
             file: vscode.Uri.file(file),
