@@ -2,11 +2,10 @@ import * as vscode from 'vscode'
 import {
   AstxRunner,
   AstxRunnerEvents,
-  Params,
   ProgressEvent,
   TransformResultEvent,
 } from '../AstxRunner'
-import { AstxExtension } from '../extension'
+import { AstxExtension, Params } from '../extension'
 import {
   MessageFromWebview,
   SearchReplaceViewStatus,
@@ -59,7 +58,7 @@ export class SearchReplaceViewProvider implements vscode.WebviewViewProvider {
           break
         }
         case 'values': {
-          this.runner.params = message.values
+          this.extension.setParams(message.values)
           break
         }
         case 'replace': {

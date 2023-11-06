@@ -5,8 +5,7 @@ import { TypedEmitter } from 'tiny-typed-emitter'
 import * as vscode from 'vscode'
 import { debounce, isEqual } from 'lodash'
 import { convertGlobPattern, joinPatterns } from './glob/convertGlobPattern'
-import { AstxParser } from './SearchReplaceView/SearchReplaceViewTypes'
-import { AstxExtension } from './extension'
+import { AstxExtension, Params } from './extension'
 import fs from 'fs/promises'
 
 export type TransformResultEvent = {
@@ -38,25 +37,8 @@ export interface AstxRunnerEvents {
   replaceDone: () => void
 }
 
-export type Params = {
-  find?: string
-  replace?: string
-  useTransformFile?: boolean
-  transformFile?: string
-  include?: string
-  exclude?: string
-  parser?: AstxParser
-  prettier?: boolean
-  babelGeneratorHack?: boolean
-  preferSimpleReplacement?: boolean
-}
-
 export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
-  private _params: Params = {
-    parser: 'babel',
-    prettier: true,
-    preferSimpleReplacement: false,
-  }
+  private params: Params
   private astxNode: AstxNodeTypes
   private abortController: AbortController | undefined
   private pool: AstxWorkerPool
@@ -73,6 +55,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
 
   constructor(private extension: AstxExtension) {
     super()
+    this.params = extension.getParams()
     this.startupPromise.catch(() => {
       // no-op
     })
@@ -86,13 +69,9 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
     await this.startupPromise
   }
 
-  get params(): Params {
-    return this._params
-  }
-
-  set params(params: Params) {
-    if (!isEqual(this._params, params)) {
-      this._params = params
+  setParams(params: Params): void {
+    if (!isEqual(this.params, params)) {
+      this.params = params
       this.runSoon()
     }
   }
@@ -130,7 +109,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
     this.emit('start')
 
     this.extension.channel.appendLine(
-      `running... ${JSON.stringify(this._params)}`
+      `running... ${JSON.stringify(this.params)}`
     )
 
     const {
@@ -141,8 +120,8 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
       prettier,
       babelGeneratorHack,
       preferSimpleReplacement,
-    } = this._params
-    let { transformFile } = this._params
+    } = this.params
+    let { transformFile } = this.params
     const workspaceFolders =
       vscode.workspace.workspaceFolders?.map((f) => f.uri.path) || []
 
@@ -166,11 +145,11 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
       }
     }
 
-    const include = this._params.include
-      ? convertGlobPattern(this._params.include, workspaceFolders)
+    const include = this.params.include
+      ? convertGlobPattern(this.params.include, workspaceFolders)
       : joinPatterns(workspaceFolders)
-    const exclude = this._params.exclude
-      ? convertGlobPattern(this._params.exclude, workspaceFolders)
+    const exclude = this.params.exclude
+      ? convertGlobPattern(this.params.exclude, workspaceFolders)
       : undefined
     const transform: Transform = {
       find,

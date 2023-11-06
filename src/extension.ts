@@ -10,8 +10,28 @@ import TransformResultProvider from './TransformResultProvider'
 import type * as AstxNodeTypes from 'astx/node'
 import fs from 'fs-extra'
 import path from 'path'
+import { isEqual } from 'lodash'
 
 let extension: AstxExtension
+
+export type AstxParser =
+  | 'babel'
+  | 'babel/auto'
+  | 'recast/babel'
+  | 'recast/babel/auto'
+
+export type Params = {
+  find?: string
+  replace?: string
+  useTransformFile?: boolean
+  transformFile?: string
+  include?: string
+  exclude?: string
+  parser?: AstxParser
+  prettier?: boolean
+  babelGeneratorHack?: boolean
+  preferSimpleReplacement?: boolean
+}
 
 export class AstxExtension {
   isProduction: boolean
@@ -23,7 +43,14 @@ export class AstxExtension {
   matchesViewProvider: MatchesViewProvider | undefined
   fsWatcher: vscode.FileSystemWatcher | undefined
 
+  private params: Params
+
   constructor(public context: vscode.ExtensionContext) {
+    this.params = {
+      parser: 'babel',
+      prettier: true,
+      preferSimpleReplacement: false,
+    }
     this.isProduction =
       context.extensionMode === vscode.ExtensionMode.Production
     this.runner = new AstxRunner(this)
@@ -92,12 +119,15 @@ export class AstxExtension {
   }
 
   getParams(): Params {
-    return this.runner.params
+    return { ...this.params }
   }
 
   setParams(params: Params): void {
-    this.runner.params = params
-    this.searchReplaceViewProvider.setParams(params)
+    if (!isEqual(this.params, params)) {
+      this.params = { ...params }
+      this.runner.setParams({ ...this.params })
+      this.searchReplaceViewProvider.setParams({ ...this.params })
+    }
   }
 
   activate(context: vscode.ExtensionContext): void {
