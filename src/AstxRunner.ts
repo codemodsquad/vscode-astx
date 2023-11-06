@@ -82,14 +82,33 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
     this.emit('stop')
   }
 
+  restartSoon: () => void = debounce(
+    () =>
+      this.restart().then(
+        () => this.run(),
+        () => {
+          /* ignore */
+        }
+      ),
+    250
+  )
+
   async restart(): Promise<void> {
     const oldPool = this.pool
-    await this.startup()
-    this.extension.channel.appendLine(
-      'created new worker pool. ending old worker pool...'
-    )
-    await oldPool?.end()
-    this.extension.channel.appendLine('successfully ended old worker pool')
+    try {
+      await this.startup()
+      this.extension.channel.appendLine(
+        'created new worker pool. ending old worker pool...'
+      )
+      await oldPool?.end()
+      this.extension.channel.appendLine('successfully ended old worker pool')
+    } catch (error) {
+      this.extension.channel.appendLine(
+        `failed to restart worker pool: ${
+          error instanceof Error ? error.stack : String(error)
+        }`
+      )
+    }
   }
 
   async shutdown(): Promise<void> {

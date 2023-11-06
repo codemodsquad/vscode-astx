@@ -9,8 +9,8 @@ import { SearchReplaceViewProvider } from './SearchReplaceView/SearchReplaceView
 import TransformResultProvider from './TransformResultProvider'
 import type * as AstxNodeTypes from 'astx/node'
 import fs from 'fs-extra'
-import path from 'path'
-import { isEqual } from 'lodash'
+import path, { resolve } from 'path'
+import { debounce, isEqual } from 'lodash'
 
 let extension: AstxExtension
 
@@ -44,6 +44,8 @@ export class AstxExtension {
   fsWatcher: vscode.FileSystemWatcher | undefined
 
   private params: Params
+  private externalWatchPattern: vscode.GlobPattern | undefined
+  private externalFsWatcher: vscode.FileSystemWatcher | undefined
 
   constructor(public context: vscode.ExtensionContext) {
     this.params = {
@@ -124,6 +126,23 @@ export class AstxExtension {
 
   setParams(params: Params): void {
     if (!isEqual(this.params, params)) {
+      if (params.transformFile !== this.params.transformFile) {
+        if (params.transformFile) {
+          const resolved = this.resolveFsPath(params.transformFile)
+          if (vscode.workspace.getWorkspaceFolder(resolved)) {
+            this.setExternalWatchPattern(undefined)
+          } else {
+            this.setExternalWatchPattern(
+              new vscode.RelativePattern(
+                vscode.Uri.file(path.dirname(resolved.fsPath)),
+                path.basename(resolved.fsPath)
+              )
+            )
+          }
+        } else {
+          this.setExternalWatchPattern(undefined)
+        }
+      }
       this.params = { ...params }
       this.runner.setParams({ ...this.params })
       this.searchReplaceViewProvider.setParams({ ...this.params })
@@ -248,10 +267,45 @@ export class AstxExtension {
         this.matchesViewProvider
       )
     )
+
+    context.subscriptions.push({
+      dispose: () => {
+        this.setExternalWatchPattern(undefined)
+      },
+    })
   }
 
   async deactivate(): Promise<void> {
     await this.runner.shutdown()
+  }
+
+  private setExternalWatchPattern(
+    externalWatchPattern: vscode.GlobPattern | undefined
+  ) {
+    function formatWatchPattern(pattern: vscode.GlobPattern): string {
+      return typeof pattern === 'string'
+        ? pattern
+        : path.join(pattern.baseUri.fsPath, pattern.pattern)
+    }
+    if (isEqual(this.externalWatchPattern, externalWatchPattern)) return
+    if (this.externalWatchPattern)
+      this.channel.appendLine(
+        `unwatching ${formatWatchPattern(this.externalWatchPattern)}`
+      )
+    this.externalWatchPattern = externalWatchPattern
+    this.externalFsWatcher?.dispose()
+    if (!externalWatchPattern) {
+      this.externalFsWatcher = undefined
+      return
+    }
+    this.externalFsWatcher =
+      vscode.workspace.createFileSystemWatcher(externalWatchPattern)
+    this.externalFsWatcher.onDidChange(this.handleFsChange)
+    this.externalFsWatcher.onDidCreate(this.handleFsChange)
+    this.externalFsWatcher.onDidDelete(this.handleFsChange)
+    this.channel.appendLine(
+      `watching ${formatWatchPattern(externalWatchPattern)}`
+    )
   }
 
   handleFsChange = (uri: vscode.Uri): void => {
@@ -260,9 +314,8 @@ export class AstxExtension {
       transformFile &&
       uri.toString() === this.resolveFsPath(transformFile).toString()
     ) {
-      this.runner.restart()
-    }
-    if (this.searchReplaceViewProvider.visible) {
+      this.runner.restartSoon()
+    } else if (this.searchReplaceViewProvider.visible) {
       this.runner.runSoon()
     }
   }
