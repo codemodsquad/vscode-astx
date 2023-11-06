@@ -213,9 +213,12 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
           config: {
             parser,
             parserOptions:
-              (parser === 'babel' || parser === 'babel/auto') &&
-              babelGeneratorHack
-                ? { preserveFormat: 'generatorHack' }
+              parser === 'babel' || parser === 'babel/auto'
+                ? {
+                    preserveFormat: babelGeneratorHack
+                      ? 'generatorHack'
+                      : undefined,
+                  }
                 : undefined,
             prettier,
             preferSimpleReplacement,
