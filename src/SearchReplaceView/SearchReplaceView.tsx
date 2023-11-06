@@ -8,12 +8,29 @@ import {
   VSCodeOption,
   VSCodeCheckbox,
 } from '@vscode/webview-ui-toolkit/react'
-import { css } from '@emotion/css'
+import { css, keyframes } from '@emotion/css'
 import useEvent from '../react/useEvent'
 import {
   SearchReplaceViewStatus,
   SearchReplaceViewValues,
 } from './SearchReplaceViewTypes'
+
+const leftAnim = keyframes`
+  from, 20% {
+    left: 0%;
+  }
+  to {
+    left: 100%;
+  }
+`
+const rightAnim = keyframes`
+  from {
+    right: 100%;
+  }
+  80%, to {
+    right: 0%;
+  }
+`
 
 export default function SearchReplaceView({
   status: {
@@ -256,10 +273,19 @@ export default function SearchReplaceView({
           className={css`
             position: absolute;
             left: 0;
+            right: 0;
             top: 0;
             bottom: 0;
             visibility: ${running ? 'visible' : 'hidden'};
-            width: ${((completed * 100) / (total || 1)).toFixed(1)}%;
+            animation: ${running && !completed
+              ? [
+                  `${leftAnim} 1s ease alternate infinite`,
+                  `${rightAnim} 1s ease alternate infinite`,
+                ].join(',')
+              : 'none'};
+            width: ${running && !completed
+              ? `initial`
+              : `${((completed * 100) / (total || 1)).toFixed(1)}%`};
             background-color: var(--vscode-progressBar-background);
           `}
         />
