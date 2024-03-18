@@ -3,7 +3,8 @@ import { FileNodeProps } from './FileNode'
 import { TreeNode } from './TreeNode'
 import { TransformResultEvent } from '../AstxRunner'
 import WorkspaceFolderNode from './WorkspaceFolderNode'
-import { throttle } from 'lodash-es'
+import lodash from 'lodash'
+const { throttle } = lodash
 import { AstxExtension } from '../extension'
 
 export class MatchesViewProvider implements vscode.TreeDataProvider<TreeNode> {

@@ -31,6 +31,31 @@
         "astx.astxPath": {
           "type": "string",
           "description": "Path to the astx module, eg: ./node_modules/astx."
+        },
+        "astx.parser": {
+          "enum": [
+            "babel",
+            "babel/auto",
+            "recast/babel",
+            "recast/babel/auto"
+          ],
+          "default": "babel",
+          "description": "JS/TS parser to use"
+        },
+        "astx.prettier": {
+          "type": "boolean",
+          "default": true,
+          "description": "reformat transformed code with prettier"
+        },
+        "astx.preferSimpleReplacement": {
+          "type": "boolean",
+          "default": false,
+          "description": "Replace using string splicing if possible, instead of regenerating code from modified AST"
+        },
+        "astx.babelGeneratorHack": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use @babel/generator hack to preserve formatting in transformed code"
         }
       }
     },
@@ -58,6 +83,14 @@
       {
         "command": "astx.findInFolder",
         "title": "astx: Find in Folder..."
+      },
+      {
+        "command": "astx.transformInFile",
+        "title": "astx: Transform in File..."
+      },
+      {
+        "command": "astx.transformInFolder",
+        "title": "astx: Transform in Folder..."
       }
     ],
     "menus": {
@@ -68,8 +101,18 @@
           "group": "astx"
         },
         {
+          "when": "explorerResourceIsFolder",
+          "command": "astx.transformInFolder",
+          "group": "astx"
+        },
+        {
           "when": "!explorerResourceIsFolder",
           "command": "astx.findInFile",
+          "group": "astx"
+        },
+        {
+          "when": "!explorerResourceIsFolder",
+          "command": "astx.transformInFile",
           "group": "astx"
         },
         {
@@ -88,6 +131,11 @@
           "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .jsx || resourceExtname == .ts || resourceExtname == .tsx || resourceExtname == .cts || resourceExtname == .mts",
           "command": "astx.findInFile",
           "group": "astx"
+        },
+        {
+          "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .jsx || resourceExtname == .ts || resourceExtname == .tsx || resourceExtname == .cts || resourceExtname == .mts",
+          "command": "astx.transformInFile",
+          "group": "astx"
         }
       ],
       "editor/title/context": [
@@ -99,6 +147,11 @@
         {
           "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .jsx || resourceExtname == .ts || resourceExtname == .tsx || resourceExtname == .cts || resourceExtname == .mts",
           "command": "astx.findInFile",
+          "group": "astx"
+        },
+        {
+          "when": "resourceExtname == .js || resourceExtname == .cjs || resourceExtname == .mjs || resourceExtname == .jsx || resourceExtname == .ts || resourceExtname == .tsx || resourceExtname == .cts || resourceExtname == .mts",
+          "command": "astx.transformInFile",
           "group": "astx"
         }
       ]
@@ -316,12 +369,11 @@
     "@repeaterjs/repeater": "^3.0.4",
     "@vscode/codicons": "^0.0.32",
     "@vscode/webview-ui-toolkit": "^1.2.2",
-    "astx": "3.0.0-beta.4",
+    "astx": "3.0.0-beta.15",
     "babel-parse-wild-code": "^1.2.0",
     "empty": "^0.10.1",
     "gitignore-fs": "^2.1.0",
     "lodash": "^4.17.21",
-    "lodash-es": "^4.17.21",
     "minimatch": "^5.1.0",
     "p-event": "^4.0.0",
     "react": "^18.2.0",

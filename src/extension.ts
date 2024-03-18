@@ -2,15 +2,15 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
 import os from 'os'
-import { AstxRunner, Params } from './AstxRunner'
+import { AstxRunner } from './AstxRunner'
 import { ASTX_REPORTS_SCHEME, ASTX_RESULT_SCHEME } from './constants'
 import { MatchesViewProvider } from './MatchesView/MatchesViewProvider'
 import { SearchReplaceViewProvider } from './SearchReplaceView/SearchReplaceViewProvider'
 import TransformResultProvider from './TransformResultProvider'
 import type * as AstxNodeTypes from 'astx/node'
 import fs from 'fs-extra'
-import path, { resolve } from 'path'
-import { debounce, isEqual } from 'lodash'
+import path from 'path'
+import { isEqual } from 'lodash'
 
 let extension: AstxExtension
 
@@ -33,6 +33,13 @@ export type Params = {
   preferSimpleReplacement?: boolean
 }
 
+const paramsInConfig: (keyof Params)[] = [
+  'parser',
+  'prettier',
+  'babelGeneratorHack',
+  'preferSimpleReplacement',
+]
+
 export class AstxExtension {
   isProduction: boolean
 
@@ -48,11 +55,8 @@ export class AstxExtension {
   private externalFsWatcher: vscode.FileSystemWatcher | undefined
 
   constructor(public context: vscode.ExtensionContext) {
-    this.params = {
-      parser: 'babel',
-      prettier: true,
-      preferSimpleReplacement: false,
-    }
+    const config = vscode.workspace.getConfiguration('astx')
+    this.params = Object.fromEntries(paramsInConfig.map((p) => [p, config[p]]))
     this.isProduction =
       context.extensionMode === vscode.ExtensionMode.Production
     this.runner = new AstxRunner(this)
@@ -60,7 +64,7 @@ export class AstxExtension {
     this.searchReplaceViewProvider = new SearchReplaceViewProvider(this)
   }
 
-  async importAstxNode(): Promise<AstxNodeTypes> {
+  async importAstxNode(): Promise<typeof AstxNodeTypes> {
     const config = vscode.workspace.getConfiguration('astx')
     if (!config.astxPath) return await import('astx/node')
 
@@ -143,6 +147,12 @@ export class AstxExtension {
           this.setExternalWatchPattern(undefined)
         }
       }
+      const config = vscode.workspace.getConfiguration('astx')
+      for (const key of paramsInConfig) {
+        if (params[key] !== this.params[key]) {
+          config.update(key, params[key], vscode.ConfigurationTarget.Workspace)
+        }
+      }
       this.params = { ...params }
       this.runner.setParams({ ...this.params })
       this.searchReplaceViewProvider.setParams({ ...this.params })
@@ -171,6 +181,21 @@ export class AstxExtension {
           `${SearchReplaceViewProvider.viewType}.focus`
         )
       })
+    )
+
+    context.subscriptions.push(
+      vscode.workspace.onDidChangeConfiguration(
+        (e: vscode.ConfigurationChangeEvent) => {
+          if (!e.affectsConfiguration('astx')) return
+          const config = vscode.workspace.getConfiguration('astx')
+          if (paramsInConfig.some((p) => this.params[p] !== config[p])) {
+            this.setParams({
+              ...this.params,
+              ...Object.fromEntries(paramsInConfig.map((p) => [p, config[p]])),
+            })
+          }
+        }
+      )
     )
 
     this.fsWatcher = vscode.workspace.createFileSystemWatcher(
@@ -208,30 +233,41 @@ export class AstxExtension {
       )
     )
 
-    const findInPath = (dir: vscode.Uri, arg2: vscode.Uri[]) => {
-      const dirs =
-        Array.isArray(arg2) && arg2.every((item) => item instanceof vscode.Uri)
-          ? arg2
-          : [dir || vscode.window.activeTextEditor?.document.uri].filter(
-              (x): x is vscode.Uri => x instanceof vscode.Uri
-            )
-      if (!dirs.length) return
-      const newParams: Params = {
-        ...this.getParams(),
-        useTransformFile: false,
-        include: dirs.map(normalizeFsPath).join(', '),
+    const setIncludePaths =
+      ({ useTransformFile }: { useTransformFile: boolean }) =>
+      (dir: vscode.Uri, arg2: vscode.Uri[]) => {
+        const dirs =
+          Array.isArray(arg2) &&
+          arg2.every((item) => item instanceof vscode.Uri)
+            ? arg2
+            : [dir || vscode.window.activeTextEditor?.document.uri].filter(
+                (x): x is vscode.Uri => x instanceof vscode.Uri
+              )
+        if (!dirs.length) return
+        const newParams: Params = {
+          ...this.getParams(),
+          useTransformFile,
+          include: dirs.map(normalizeFsPath).join(', '),
+        }
+        this.setParams(newParams)
+        vscode.commands.executeCommand(
+          `${SearchReplaceViewProvider.viewType}.focus`
+        )
       }
-      this.setParams(newParams)
-      vscode.commands.executeCommand(
-        `${SearchReplaceViewProvider.viewType}.focus`
-      )
-    }
+    const findInPath = setIncludePaths({ useTransformFile: false })
+    const transformInPath = setIncludePaths({ useTransformFile: true })
 
     context.subscriptions.push(
       vscode.commands.registerCommand('astx.findInFile', findInPath)
     )
     context.subscriptions.push(
+      vscode.commands.registerCommand('astx.transformInFile', transformInPath)
+    )
+    context.subscriptions.push(
       vscode.commands.registerCommand('astx.findInFolder', findInPath)
+    )
+    context.subscriptions.push(
+      vscode.commands.registerCommand('astx.transformInFolder', transformInPath)
     )
 
     context.subscriptions.push(

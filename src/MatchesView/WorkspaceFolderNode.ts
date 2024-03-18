@@ -1,8 +1,8 @@
 import { TreeItem, TreeItemCollapsibleState } from 'vscode'
 import { TreeNode } from './TreeNode'
 import FileNode, { FileNodeProps } from './FileNode'
-import { once } from 'lodash-es'
-
+import lodash from 'lodash'
+const { once } = lodash
 type WorkspaceFolderNodeProps = {
   name: string
   files: FileNodeProps[]

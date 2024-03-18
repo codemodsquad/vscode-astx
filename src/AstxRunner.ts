@@ -39,9 +39,9 @@ export interface AstxRunnerEvents {
 
 export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
   private params: Params
-  private astxNode: AstxNodeTypes
+  private astxNode: typeof AstxNodeTypes = undefined as any
   private abortController: AbortController | undefined
-  private pool: AstxWorkerPool
+  private pool: AstxWorkerPool = undefined as any
   private transformResults: Map<
     string,
     {
@@ -255,7 +255,7 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
             transformed,
             reports,
             matches: matches || [],
-            error: error ? this.astxNode.invertIpcError(error) : null,
+            error: error ? this.astxNode.invertIpcError(error) : undefined,
           }
           this.emit('result', event)
         }

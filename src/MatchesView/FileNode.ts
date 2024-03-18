@@ -5,7 +5,8 @@ import * as vscode from 'vscode'
 import { TreeNode } from './TreeNode'
 import MatchNode from './MatchNode'
 import path from 'path'
-import { once } from 'lodash-es'
+import lodash from 'lodash'
+const { once } = lodash
 import LeafTreeItemNode from './LeafTreeItemNode'
 import { ASTX_REPORTS_SCHEME, ASTX_RESULT_SCHEME } from '../constants'
 
