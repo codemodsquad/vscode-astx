@@ -76,6 +76,11 @@ export default function SearchReplaceView({
   }, [])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleRerunAutomaticallyChange = React.useCallback((e: any) => {
+    onValuesChange({ paused: !e.target.checked })
+  }, [])
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleIncludeChange = React.useCallback((e: any) => {
     onValuesChange({ include: e.target.value })
   }, [])
@@ -229,6 +234,13 @@ export default function SearchReplaceView({
           >
             files to exclude
           </VSCodeTextField>
+          <VSCodeCheckbox
+            checked={!values.paused}
+            onChange={handleRerunAutomaticallyChange}
+          >
+            Rerun Automatically
+          </VSCodeCheckbox>
+
           <p>Parser</p>
           <VSCodeDropdown
             position="below"

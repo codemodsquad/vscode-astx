@@ -25,6 +25,7 @@ export type Params = {
   replace?: string
   useTransformFile?: boolean
   transformFile?: string
+  paused?: boolean
   include?: string
   exclude?: string
   parser?: AstxParser

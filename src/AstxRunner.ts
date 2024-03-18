@@ -39,6 +39,7 @@ export interface AstxRunnerEvents {
 
 export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
   private params: Params
+  private pausedRestart = false
   private astxNode: typeof AstxNodeTypes = undefined as any
   private abortController: AbortController | undefined
   private pool: AstxWorkerPool = undefined as any
@@ -72,7 +73,12 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
   setParams(params: Params): void {
     if (!isEqual(this.params, params)) {
       this.params = params
-      this.runSoon()
+      if (!this.params.paused && this.pausedRestart) {
+        this.pausedRestart = false
+        this.restartSoon()
+      } else {
+        this.runSoon()
+      }
     }
   }
 
@@ -81,8 +87,14 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
     this.transformResults.clear()
     this.emit('stop')
   }
-
-  restartSoon: () => void = debounce(
+  restartSoon: () => void = () => {
+    if (this.params.paused) {
+      this.pausedRestart = true
+    } else {
+      this.debouncedRestart()
+    }
+  }
+  debouncedRestart: () => void = debounce(
     () =>
       this.restart().then(
         () => this.run(),
@@ -116,7 +128,11 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
     await this.pool.end()
   }
 
-  runSoon: () => void = debounce(() => this.run(), 250)
+  runSoon: () => void = () => {
+    if (!this.params.paused) this.debouncedRun()
+  }
+
+  debouncedRun: () => void = debounce(() => this.run(), 250)
 
   run(): void {
     this.stop()
