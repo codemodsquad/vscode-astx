@@ -359,11 +359,20 @@ export class AstxRunner extends TypedEmitter<AstxRunnerEvents> {
       file,
       { source, transformed },
     ] of this.transformResults.entries()) {
-      edit.replace(
-        vscode.Uri.file(file),
-        new vscode.Range(new vscode.Position(0, 0), endPosition(source)),
-        transformed
-      )
+      const encoder = new TextEncoder()
+      if (source.trim() && transformed?.trim()) {
+        edit.replace(
+          vscode.Uri.file(file),
+          new vscode.Range(new vscode.Position(0, 0), endPosition(source)),
+          transformed
+        )
+      } else if (transformed?.trim()) {
+        edit.createFile(vscode.Uri.file(file), {
+          contents: encoder.encode(transformed),
+        })
+      } else {
+        edit.deleteFile(vscode.Uri.file(file))
+      }
     }
     await vscode.workspace.applyEdit(edit)
     this.transformResults.clear()

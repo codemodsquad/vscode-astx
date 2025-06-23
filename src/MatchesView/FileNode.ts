@@ -32,7 +32,7 @@ export default class FileNode extends TreeNode<FileNodeProps> {
     return error.stack || error.message || String(error)
   }
   getTreeItem(): TreeItem {
-    const { file, transformed, reports, matches } = this.props
+    const { file, source, transformed, reports, matches } = this.props
     const item = new TreeItem(
       file.with({ scheme: ASTX_RESULT_SCHEME }),
       matches.length || reports?.length
@@ -53,31 +53,69 @@ export default class FileNode extends TreeNode<FileNodeProps> {
     } else {
       const nodes = matches[0]?.nodes
       const { startLine, startColumn } = nodes?.[0]?.location || {}
-      item.command = {
-        title: transformed ? 'open diff' : 'open file',
-        command: transformed ? 'vscode.diff' : 'vscode.open',
-        arguments: [
-          file,
-          ...(transformed
-            ? [
+      item.command =
+        transformed?.trim() && source.trim()
+          ? {
+              title: 'open diff',
+              command: 'vscode.diff',
+              arguments: [
+                file,
                 file.with({ scheme: ASTX_RESULT_SCHEME }),
                 path.basename(file.path),
-              ]
-            : []),
-          ...(startLine != null && startColumn != null
-            ? [
-                {
-                  selection: new vscode.Range(
-                    startLine - 1,
-                    startColumn,
-                    startLine - 1,
-                    startColumn
-                  ),
-                },
-              ]
-            : []),
-        ],
-      }
+                ...(startLine != null && startColumn != null
+                  ? [
+                      {
+                        selection: new vscode.Range(
+                          startLine - 1,
+                          startColumn,
+                          startLine - 1,
+                          startColumn
+                        ),
+                      },
+                    ]
+                  : []),
+              ],
+            }
+          : transformed?.trim()
+          ? {
+              title: 'open file',
+              command: 'vscode.open',
+              arguments: [
+                file.with({ scheme: ASTX_RESULT_SCHEME }),
+                path.basename(file.path),
+                ...(startLine != null && startColumn != null
+                  ? [
+                      {
+                        selection: new vscode.Range(
+                          startLine - 1,
+                          startColumn,
+                          startLine - 1,
+                          startColumn
+                        ),
+                      },
+                    ]
+                  : []),
+              ],
+            }
+          : {
+              title: 'open file',
+              command: 'vscode.open',
+              arguments: [
+                file,
+                ...(startLine != null && startColumn != null
+                  ? [
+                      {
+                        selection: new vscode.Range(
+                          startLine - 1,
+                          startColumn,
+                          startLine - 1,
+                          startColumn
+                        ),
+                      },
+                    ]
+                  : []),
+              ],
+            }
     }
     return item
   }
