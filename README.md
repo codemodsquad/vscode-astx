@@ -12,5 +12,5 @@ VSCode extension for [`astx`](https://github.com/codemodsquad/astx) structural s
 
 ## Installation
 
-This is currently in beta. Install it by going to [Releases](/releases), downloading `vscode-astx-1.0.0-beta.#.vsix` in
+This is currently in beta. Install it by going to [Releases](https://github.com/codemodsquad/vscode-astx/releases), downloading `vscode-astx-1.0.0-beta.#.vsix` in
 the assets of the latest release, and installing by running `code --install-extension vscode-astx-1.0.0-beta.#.vsix`.
